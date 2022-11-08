@@ -444,8 +444,9 @@ def main():
             "Triaxial_Strain": list_triaxial_strain,
         }
     )
-    print("Operation done!")
     df_Model.to_csv(f"{path}/test.csv")
+    print("Operation done!")
+    
 
 
 if __name__ == "__main__":
