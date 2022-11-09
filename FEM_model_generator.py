@@ -114,7 +114,7 @@ def gen_batch_post(foldername, sub_folders):
 def extract_ThicknessReduction(fem_model):
     source = f"{fem_model}/%ThicknessReduction.csv"
     if not file_exists(source):
-        print("File %ThicknessReduction.csv not exist in folder: ", i)
+        print("File %ThicknessReduction.csv not exist in folder: ", fem_model)
     else:
         # source = str(dir + "/" + str(file))
         print("\n", fem_model)
@@ -297,7 +297,7 @@ def calc_end_angle(fem_model, max_index):
         end_angle = 0
         # list_end_angle.append(end_angle)
 
-        print("File ArmAngle2.csv not exist in folder: ", i)
+        print("File ArmAngle2.csv not exist in folder: ", fem_model)
     else:
 
         df_end_angle = pd.read_csv(end_angle_path, skiprows=[0])
@@ -426,7 +426,7 @@ def main():
         list_plane_strain.append(plane_strain)
         list_uniaxial_strain.append(uniaxial_strain)
 
-    print(list_triaxial_strain)
+    # print(list_triaxial_strain)
     df_Model = pd.DataFrame(
         {
             "Model_Name": sub_folders,
