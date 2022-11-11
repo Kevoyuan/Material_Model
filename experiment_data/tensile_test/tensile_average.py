@@ -55,8 +55,13 @@ def calc_min_len(csv_files):
 
     return min_len
 
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
 
-def gen_avg(min_len, temp_files):
+
+def gen_avg(min_len, temp_files,pl_strain):
 
     df2 = pd.DataFrame(np.zeros((min_len, 5)))
     print("temp_files: ",temp_files)
@@ -77,36 +82,51 @@ def gen_avg(min_len, temp_files):
     df2 = df2.dropna()
 
     # remove outlier of r_value
-    r_mean = stats.trim_mean(df2["r_value"], 0.1)
-    # r_mean = df2["r_value"].mean()
-    
+    # r_mean = stats.trim_mean(df2["r_value"], 0.1)
 
-    df2 = df2.iloc[:, :4]
+
+
+    # df2 = df2.iloc[:, :4]
+
 
     if "_0_" in temp_files[0]:
+        idx = find_nearest(df2["x_strain"], pl_strain)
+
+        r_value = df2.loc[idx, 'r_value']
 
         print("\n\noutput:", f"./ex_data_raw/00deg.csv done!")
-        print("\n\nr_value_0 mean:", r_mean)
+        print("\n\nr_value_0:", r_value)
         print("\n")
+        df2 = df2.iloc[:, :4]
 
         df2.to_csv(f"./ex_data_raw/00deg.csv", header=False, index=False)
     elif "_90_" in temp_files[0]:
         print("\n\noutput:", f"./ex_data_raw/90deg.csv done!")
+        idx = find_nearest(df2["y_strain"], pl_strain)
+
+        r_value = df2.loc[idx, 'r_value']
+
+        df2 = df2.iloc[:, :4]
 
         df2.to_csv(f"./ex_data_raw/90deg.csv", header=False, index=False)
-        print("\n\nr_value_90 mean:", r_mean)
+        print("\n\nr_value_90:", r_value)
         print("\n")
     elif "_45_" in temp_files[0]:
         print("\n\noutput:", f"./ex_data_raw/45deg.csv done!")
+        idx = find_nearest(df2["x_strain"], pl_strain)
+
+        r_value = df2.loc[idx, 'r_value']
+        df2 = df2.iloc[:, :4]
 
         df2.to_csv(f"./ex_data_raw/45deg.csv", header=False, index=False)
-        print("\n\nr_value_45 mean:", r_mean)
+        print("\n\nr_value_45:", r_value)
         print("\n")
 
 
 def main():
 
-    tensile_deg = "DC06_l_90_"
+    tensile_deg = "DC06_l_0_"
+    pl_strain = 0.001
 
     all_files = glob.glob(f"./experiment_data/tensile_test/{tensile_deg}*analysed.csv")
     print("\nall_files: ", all_files)
@@ -127,7 +147,7 @@ def main():
     print("\n\ncsv_files:", csv_files_deg)
 
     min_len = calc_min_len(csv_files_deg)
-    gen_avg(min_len, temp_files_deg)
+    gen_avg(min_len, temp_files_deg,pl_strain)
 
 
 if __name__ == "__main__":
