@@ -7,7 +7,7 @@ import glob
 csv_files = glob.glob("./yld2000/eq*.csv")
 print(csv_files)
 
-fig = plt.figure(figsize=(12, 6))
+fig = plt.figure(figsize=(14, 6))
 
 ax1 = fig.add_subplot(1, 2, 1)
 ax2 = fig.add_subplot(1, 2, 2)
