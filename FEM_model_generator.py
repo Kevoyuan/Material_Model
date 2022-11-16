@@ -103,7 +103,7 @@ def gen_batch_post(foldername, sub_folders):
 
         for i in sub_folders:
             i = foldername + "\\" + str(i)
-            dir = str("Z:\MA\LSDYNA_Model" + "\\" + i)
+            dir = str("Z:\MA\Material_Model" + "\\" + i)
             command_line = f'start /D "{dir}" post_command.bat'
             # print(command_line)
             f.write(f'\nstart /D "{dir}" post_command.bat\n\n')
@@ -115,17 +115,27 @@ def extract_ThicknessReduction(fem_model):
     source = f"{fem_model}/%ThicknessReduction.csv"
     if not file_exists(source):
         print("File %ThicknessReduction.csv not exist in folder: ", fem_model)
+        
     else:
         # source = str(dir + "/" + str(file))
         print("\n", fem_model)
         df = pd.read_csv(source, header=1)
-        df_A1 = df["A1"]
+        df["A1"] =pd.to_numeric(df["A1"].replace({'nan': '100','-nan(ind)': '100'}))
+
+        
+        df2=df.dropna(subset=["A1"])
+        # df2=df[df["A1"].notna()]
+        df_A1 = df2["A1"]
+        # df_A1 = df_A1.dropna()
         # print(df)
+        # print(df_A1)
 
         df_A1 = df_A1[df_A1 < 30]
+        print(df_A1)
         max_index = df_A1.idxmax()
+        print(max_index)
 
-        maxThicknessReduction = df_A1.max()
+        # maxThicknessReduction = df_A1.max()
         state = max_index + 1
 
         # print(f"state: {max_index+1}\n")
@@ -134,7 +144,7 @@ def extract_ThicknessReduction(fem_model):
         # list_ThicknessReduction.append(maxThicknessReduction)
 
         # frame = pd.concat(li, axis=0, ignore_index=True)
-        return (
+    return (
             state,
             max_index,
         )
@@ -307,7 +317,8 @@ def calc_end_angle(fem_model, max_index):
         end_angles = column_headers_end_angle[1]
 
         df_end_angle = df_end_angle[end_angles]
-        end_angle = df_end_angle.iloc[max_index] - 90
+        end_angle = float(df_end_angle[max_index]) - 90
+        print("\nend_angle: ",end_angle)
 
     return end_angle
 
@@ -380,12 +391,9 @@ def calc_strains(fem_model):
     return triaxial_strain, plane_strain, uniaxial_strain
 
 
-def main():
-    foldername = "Test_model_Position"
-    path = f"./{foldername}"
-
-    sub_folders = read_subfolders(path)
-    gen_batch_post(foldername, sub_folders)
+def extract_datas(path,sub_folders):
+    # parameter
+    parameter = []
 
     # ThicknessReduction = []
     list_state = []
@@ -402,10 +410,13 @@ def main():
 
     for files in sub_folders:
 
+        parameter.append(re.findall("_(.*)", files)[0])
+
+
         fem_model = path + "/" + str(files)
         print("\n\nfem_model: ", fem_model)
         print("\n")
-        remove_command_line(fem_model)
+        # remove_command_line(fem_model)
 
         state, max_index = extract_ThicknessReduction(fem_model)
         print("\nstate: ", state)
@@ -430,6 +441,7 @@ def main():
     df_Model = pd.DataFrame(
         {
             "Model_Name": sub_folders,
+            "Param": parameter,
             # "ArmAngle": list_arm_deg,
             # "Angle": list_deg,
             # "Diameter": list_d,
@@ -442,10 +454,26 @@ def main():
             "Plane_Strain": list_plane_strain,
             "Uniaxial_Strain": list_uniaxial_strain,
             "Triaxial_Strain": list_triaxial_strain,
+
         }
     )
     df_Model.to_csv(f"{path}/test.csv")
     print("Operation done!")
+
+
+def main():
+    foldername = "YLD_2d_Investigation/r00"
+    # foldername = "SwiftN/YLD_iso"
+
+    path = f"./{foldername}"
+
+    sub_folders = read_subfolders(path)
+    gen_batch_post(foldername, sub_folders)
+    extract_datas(path,sub_folders)
+
+
+
+
 
 
 if __name__ == "__main__":
