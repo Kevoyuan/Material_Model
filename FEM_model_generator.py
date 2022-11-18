@@ -17,7 +17,7 @@ def read_subfolders(path):
     sub_folders = [
         name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))
     ]
-    print(sub_folders)
+    # print(sub_folders)
 
     return sub_folders
 
@@ -115,25 +115,25 @@ def extract_ThicknessReduction(fem_model):
     source = f"{fem_model}/%ThicknessReduction.csv"
     if not file_exists(source):
         print("File %ThicknessReduction.csv not exist in folder: ", fem_model)
-        
+
     else:
         # source = str(dir + "/" + str(file))
         print("\n", fem_model)
         df = pd.read_csv(source, header=1)
-        df["A1"] =pd.to_numeric(df["A1"].replace({'nan': '100','-nan(ind)': '100'}))
+        # remove all string:"nan" from thickness reduction column
+        if df["A1"].astype(str).str.contains("nan").any() == True:
+            df = df[~df["A1"].str.contains("nan|-nan(ind)")]
+            df_A1 = df["A1"]
+        else:
+            df_A1 = df["A1"]
 
-        
-        df2=df.dropna(subset=["A1"])
-        # df2=df[df["A1"].notna()]
-        df_A1 = df2["A1"]
-        # df_A1 = df_A1.dropna()
-        # print(df)
-        # print(df_A1)
+        # convert string back to numeric
+        df_A1 = df_A1.apply(pd.to_numeric)
 
         df_A1 = df_A1[df_A1 < 30]
-        print(df_A1)
+        # print(df_A1)
         max_index = df_A1.idxmax()
-        print(max_index)
+        # print(max_index)
 
         # maxThicknessReduction = df_A1.max()
         state = max_index + 1
@@ -143,11 +143,10 @@ def extract_ThicknessReduction(fem_model):
 
         # list_ThicknessReduction.append(maxThicknessReduction)
 
-        # frame = pd.concat(li, axis=0, ignore_index=True)
     return (
-            state,
-            max_index,
-        )
+        state,
+        max_index,
+    )
 
 
 def extract_angle_node(fem_model):
@@ -318,7 +317,7 @@ def calc_end_angle(fem_model, max_index):
 
         df_end_angle = df_end_angle[end_angles]
         end_angle = float(df_end_angle[max_index]) - 90
-        print("\nend_angle: ",end_angle)
+        print("\nend_angle: ", end_angle)
 
     return end_angle
 
@@ -391,7 +390,7 @@ def calc_strains(fem_model):
     return triaxial_strain, plane_strain, uniaxial_strain
 
 
-def extract_datas(path,sub_folders):
+def extract_datas(path, sub_folders):
     # parameter
     parameter = []
 
@@ -411,7 +410,6 @@ def extract_datas(path,sub_folders):
     for files in sub_folders:
 
         parameter.append(re.findall("_(.*)", files)[0])
-
 
         fem_model = path + "/" + str(files)
         print("\n\nfem_model: ", fem_model)
@@ -454,7 +452,6 @@ def extract_datas(path,sub_folders):
             "Plane_Strain": list_plane_strain,
             "Uniaxial_Strain": list_uniaxial_strain,
             "Triaxial_Strain": list_triaxial_strain,
-
         }
     )
     df_Model.to_csv(f"{path}/test.csv")
@@ -469,11 +466,7 @@ def main():
 
     sub_folders = read_subfolders(path)
     gen_batch_post(foldername, sub_folders)
-    extract_datas(path,sub_folders)
-
-
-
-
+    extract_datas(path, sub_folders)
 
 
 if __name__ == "__main__":
