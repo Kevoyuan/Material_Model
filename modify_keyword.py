@@ -16,22 +16,34 @@ def replace_in_file(file_path, search_text, new_text):
             print(new_line, end="")
 
 
-def find_param(file_path, modify_parameter):
+def find_param(file_path, changed_parameter):
     with open(f"{file_path}", "r+") as fa:
         a = [x.rstrip() for x in fa]
         for item in a:
-            if modify_parameter in item:
-                print("old parameter: ", item)
+            if changed_parameter in item:
+                print("old parameter: \n", item)
                 break
     return item
 
 
 def main():
 
-    path = f"SwiftN/YLD_aniso/test"
     keyword_filename = "main_keyword_sigma_0.dyn"
 
-    modify_parameter = "r00"
+    # modify_parameter = "SwiftN"
+    # path = f"YLD_2d_Investigation/{modify_parameter}"
+
+
+    modify_parameter = "sig90"
+
+    path = f"YLD_2d_Investigation/{modify_parameter}"
+
+    if modify_parameter == "M":
+        changed_parameter = " M "
+    else: 
+        changed_parameter = modify_parameter
+
+
 
     # new_text = f"R  {modify_parameter}\t{new_value}"
 
@@ -47,11 +59,12 @@ def main():
         val = files.split("_")
 
         new_value = val[1]
-        print(new_value)
-        new_text = f"R     {modify_parameter}\t\t{new_value}"
+        # print(new_value)
+        new_text = f"R   {changed_parameter}       {new_value}"
+        print("\nmodified new value:\n",new_text)
 
         print("file_path: ", file_path)
-        search_text = find_param(file_path, modify_parameter)
+        search_text = find_param(file_path, changed_parameter)
         replace_in_file(file_path, search_text, new_text)
 
 
