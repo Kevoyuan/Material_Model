@@ -8,6 +8,8 @@ from scipy import interpolate
 
 from os.path import exists as file_exists
 from traceback import print_tb
+from matplotlib import pyplot as plt
+import matplotlib.image as mpimg
 
 # import YDisplacement
 
@@ -98,6 +100,7 @@ def remove_command_line(fem_model):
 
 
 def gen_batch_post(foldername, sub_folders):
+    # generate a batch file to extract data at one time
     with open(f"./{foldername}/post_command.bat", "w") as f:
         f.write("@echo off\n\n")
 
@@ -458,6 +461,49 @@ def extract_datas(path, sub_folders):
     print("Operation done!")
 
 
+def plot_strain_distribution(path,sub_folders):
+    # img = mpimg.imread("specimen_center.png")
+    # # imgplot = plt.imshow(img)
+    fig, ax = plt.subplots()
+    # im = ax.imshow(img,zorder=0)
+
+    for files in sub_folders:
+
+
+        strain_path = f"{path}/{files}"
+
+        Strain_path = f"{strain_path}/StrainCurve.csv"
+        df_strain = pd.read_csv(Strain_path, header=1)
+
+        column_headers_strain = list(df_strain.columns.values)
+
+        x_strain = df_strain[column_headers_strain[0]]
+        x_strain = x_strain - 0.5 * x_strain.max()
+
+        y_strain = df_strain[column_headers_strain[1]]
+
+        # f_strain = interpolate.interp1d(x_strain, y_strain, fill_value="extrapolate")
+
+        # xnew_strain = np.arange(0, int(x_strain.max()), 0.0001)
+        # # print("xnew: ", xnew_strain)
+        # ynew_strain = f_strain(xnew_strain)  # use interpolation function returned by `interp1d`
+
+        # plane_strain = f_strain(x_plane_strain)
+        lablename = files
+        # print(f"{lablename}")
+
+        # labelname = f"{file}"
+        ax.plot(x_strain, y_strain,label = lablename,zorder=1)
+    ax.legend()
+    title = path.split("/")[2]
+    ax.set_title(f"Parameter: {title}")
+    ax.set_ylabel("Eq. Strain")
+    ax.set_xlabel("Section along middle line/[mm]")
+    plt.savefig(f"{path}/{title}.png", format='png', transparent=True)
+
+    plt.show()
+
+
 def main():
     foldername = "YLD_2d_Investigation/r00"
     # foldername = "SwiftN/YLD_iso"
@@ -465,8 +511,11 @@ def main():
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    gen_batch_post(foldername, sub_folders)
-    extract_datas(path, sub_folders)
+    # gen_batch_post(foldername, sub_folders)
+    # extract_datas(path, sub_folders)
+ 
+    plot_strain_distribution(path,sub_folders)
+ 
 
 
 if __name__ == "__main__":
