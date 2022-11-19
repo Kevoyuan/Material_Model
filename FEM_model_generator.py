@@ -10,6 +10,7 @@ from os.path import exists as file_exists
 from traceback import print_tb
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
+from matplotlib.pyplot import figure
 
 # import YDisplacement
 
@@ -112,6 +113,7 @@ def gen_batch_post(foldername, sub_folders):
             f.write(f'\nstart /D "{dir}" post_command.bat\n\n')
 
         f.write("\n\necho *** FINISHED WITH POST COMMAND SCRIPT ***")
+    print("\nBatch File generated!\n")
 
 
 def extract_ThicknessReduction(fem_model):
@@ -413,6 +415,7 @@ def extract_datas(path, sub_folders):
     for files in sub_folders:
 
         parameter.append(re.findall("_(.*)", files)[0])
+        
 
         fem_model = path + "/" + str(files)
         print("\n\nfem_model: ", fem_model)
@@ -437,12 +440,17 @@ def extract_datas(path, sub_folders):
         list_triaxial_strain.append(triaxial_strain)
         list_plane_strain.append(plane_strain)
         list_uniaxial_strain.append(uniaxial_strain)
-
+    
+    # sort_values: descending
+    print("\nparameter:\n",parameter)
+    parameter_num = [float(elements) for elements in parameter]
+    print("\nparameter_num:\n",parameter_num)
+    
     # print(list_triaxial_strain)
     df_Model = pd.DataFrame(
         {
             "Model_Name": sub_folders,
-            "Param": parameter,
+            "Param": parameter_num,
             # "ArmAngle": list_arm_deg,
             # "Angle": list_deg,
             # "Diameter": list_d,
@@ -457,18 +465,34 @@ def extract_datas(path, sub_folders):
             "Triaxial_Strain": list_triaxial_strain,
         }
     )
+    # df_Model["Param"] = df_Model["Param"].apply(pd.to_numeric)
+    df_Model.sort_values(
+        ["Param"],
+        axis=0,
+        # ascending=[False],
+        inplace=True,
+        ignore_index = True
+    )
+    # df_Model.sort_values(
+    #     ["Model_Name"],
+    #     axis=0,
+    #     # ascending=[False],
+    #     inplace=True,
+    # )
+
     df_Model.to_csv(f"{path}/test.csv")
     print("Operation done!")
 
 
-def plot_strain_distribution(path,sub_folders):
+def plot_strain_distribution(path, sub_folders):
     # img = mpimg.imread("specimen_center.png")
     # # imgplot = plt.imshow(img)
+
     fig, ax = plt.subplots()
+
     # im = ax.imshow(img,zorder=0)
 
     for files in sub_folders:
-
 
         strain_path = f"{path}/{files}"
 
@@ -493,29 +517,86 @@ def plot_strain_distribution(path,sub_folders):
         # print(f"{lablename}")
 
         # labelname = f"{file}"
-        ax.plot(x_strain, y_strain,label = lablename,zorder=1)
+        ax.plot(x_strain, y_strain, label=lablename, zorder=1)
     ax.legend()
     title = path.split("/")[2]
     ax.set_title(f"Parameter: {title}")
     ax.set_ylabel("Eq. Strain")
     ax.set_xlabel("Section along middle line/[mm]")
-    plt.savefig(f"{path}/{title}.png", format='png', transparent=True)
+    plt.savefig(
+        f"{path}/{title}_strain_distribution.png", format="png", transparent=True
+    )
 
     plt.show()
 
 
+def plot_strain(file_path):
+    # file_path: folder of variable
+    # cuttingline: cutting section of the model in y = cuttingline
+
+    parameter_name = file_path.split("/")[2]
+
+    Labelname = f"parameter: {parameter_name}"
+    Variable = f"Param"
+
+    df_var = pd.read_csv(file_path + "/test.csv")
+
+    x_var = df_var[Variable]
+    x = np.array(x_var).reshape(-1, 1)
+
+    y_tri_strain = df_var["Triaxial_Strain"]
+    y = np.array(y_tri_strain)
+
+    y_plane_strain = df_var["Plane_Strain"]
+
+    y_uniaxial_strain = df_var["Uniaxial_Strain"]
+
+    y_state_var = df_var["State"]
+    y_state_End_Angle = df_var["EndAngle"]
+    y_state_End_Angle = round(y_state_End_Angle, 1)
+    # print(x)-*
+
+    print("Setup Complete")
+
+    plt.xticks(np.linspace(x_var.min(), x_var.max(), len(x_var)))
+
+    plt.plot(x_var, y_tri_strain, "o-", label="triaxial strain")
+    plt.plot(x_var, y_plane_strain, "o-", label="plane strain")
+    plt.plot(x_var, y_uniaxial_strain, "o-", label="uniaxial strain")
+
+    # plt.plot(x_var, y_pred, "r", label="fitted line")
+    plt.ylabel("Eq_Strains")
+    plt.xlabel(Labelname)
+
+    plt.legend()
+
+    ymax_tri_strain = max(y_tri_strain)
+    # xpos_var = y_tri_strain.idxmax()
+    # print(xpos_var)
+    # xmax_var = x_var.iloc[xpos_var]
+
+    for i, txt in enumerate(y_state_var):
+        plt.annotate(txt, (x_var[i], y_plane_strain[i]))
+
+    for i, txt in enumerate(y_state_End_Angle):
+        plt.annotate(txt, (x_var[i], y_tri_strain[i] + 0.01 * ymax_tri_strain))
+
+    plt.savefig(f"{file_path}/{parameter_name}_strain_compare.png")
+    plt.show()
+
+
 def main():
-    foldername = "YLD_2d_Investigation/r00"
-    # foldername = "SwiftN/YLD_iso"
+    # foldername = "YLD_2d_Investigation/sig90"
+    foldername = "YLD_2d_Investigation/M"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
     # gen_batch_post(foldername, sub_folders)
-    # extract_datas(path, sub_folders)
- 
-    plot_strain_distribution(path,sub_folders)
- 
+    extract_datas(path, sub_folders)
+
+    plot_strain_distribution(path, sub_folders)
+    plot_strain(path)
 
 
 if __name__ == "__main__":
