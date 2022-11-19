@@ -60,3 +60,4 @@ gen_mesh.cfile
 experiment_data/stack_compression_test/rb_pred.py
 Diagrams*
 fit_polynominal*
+*.yaml
