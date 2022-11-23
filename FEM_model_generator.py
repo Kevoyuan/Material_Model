@@ -20,7 +20,12 @@ def read_subfolders(path):
     sub_folders = [
         name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))
     ]
+    remove_list = [
+        "remove",
+    ]
+    sub_folders = [ele for ele in sub_folders if ele not in remove_list]
     # print(sub_folders)
+    sub_folders= sorted(sub_folders, key=lambda s: float(s.split("_")[1]))
 
     return sub_folders
 
@@ -149,7 +154,7 @@ def extract_ThicknessReduction(fem_model):
         # list_ThicknessReduction.append(maxThicknessReduction)
 
     return state
-        # max_index,
+    # max_index,
     # )
 
 
@@ -289,7 +294,7 @@ def add_angle_command(fem_model, angle_command):
         for item in a:
 
             if item.startswith(angle_command):
-                print("Angle NODE insert already")
+                print("Angle NODE inserted already")
                 break
             elif item.startswith("measure history angle3 a"):
                 idx_angle = a.index(item, a.index(item))
@@ -321,7 +326,7 @@ def calc_end_angle(fem_model, max_index):
 
         df_end_angle = df_end_angle[end_angles]
         end_angle = float(df_end_angle[max_index]) - 90
-        print("\nend_angle: ", end_angle)
+        print("end_angle: ", end_angle)
 
     return end_angle
 
@@ -352,7 +357,7 @@ def add_arm_line(fem_model, end_angle, Tri_point):
                 print("arm lline: ", a[idx6 - 1])
                 if arm_line == a[idx6 - 1]:
 
-                    print("NODE for arm line insert already")
+                    print("NODE for arm line inserted already")
                     break
                 else:
                     print("index6 =  ", idx6)
@@ -415,26 +420,25 @@ def extract_datas(path, sub_folders):
     for files in sub_folders:
 
         parameter.append(re.findall("_(.*)", files)[0])
-        
 
         fem_model = path + "/" + str(files)
         print("\n\nfem_model: ", fem_model)
-        print("\n")
+
         # remove_command_line(fem_model)
 
-        state= extract_ThicknessReduction(fem_model)
+        state = extract_ThicknessReduction(fem_model)
         state_broken.append(state)
-        print("\nstate: ", state)
-        
+        print("\nbroken state: ", state)
+
         if min_state is None or state < min_state:
             min_state = state
-    max_index = min_state -1  
-    
-        
+    max_index = min_state - 1
+    print("\n\nmin_state: ", min_state)
+
     for files in sub_folders:
         list_state.append(min_state)
         fem_model = path + "/" + str(files)
-        
+
         print("\n\nfem_model: ", files)
 
         cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
@@ -451,12 +455,11 @@ def extract_datas(path, sub_folders):
         list_triaxial_strain.append(triaxial_strain)
         list_plane_strain.append(plane_strain)
         list_uniaxial_strain.append(uniaxial_strain)
-    print("min_state: ",min_state)
     # sort_values: descending
     # print("\nparameter:\n",parameter)
     parameter_num = [float(elements) for elements in parameter]
     # print("\nparameter_num:\n",parameter_num)
-    
+
     # print(list_triaxial_strain)
     df_Model = pd.DataFrame(
         {
@@ -483,7 +486,7 @@ def extract_datas(path, sub_folders):
         axis=0,
         # ascending=[False],
         inplace=True,
-        ignore_index = True
+        ignore_index=True,
     )
     # df_Model.sort_values(
     #     ["Model_Name"],
@@ -493,22 +496,29 @@ def extract_datas(path, sub_folders):
     # )
 
     df_Model.to_csv(f"{path}/test.csv")
-    print("Operation done!")
+    print("\n\nOperation done!")
 
 
-def plot_strain_distribution(path, sub_folders):
+def plot_strain_distribution(path, sub_folders, strain_type):
     # img = mpimg.imread("specimen_center.png")
     # # imgplot = plt.imshow(img)
 
-    fig, ax = plt.subplots()
+    # fig, ax = plt.subplots()
 
     # im = ax.imshow(img,zorder=0)
+    # ax = plt.axes()
+    if strain_type == "eq_strain":
+        strain_distribution = "StrainCurve.csv"
+    elif strain_type == "x_strain":
+        strain_distribution = "x_strain.csv"
+    elif strain_type == "y_strain":
+        strain_distribution = "y_strain.csv"
 
     for files in sub_folders:
 
         strain_path = f"{path}/{files}"
 
-        Strain_path = f"{strain_path}/StrainCurve.csv"
+        Strain_path = f"{strain_path}/{strain_distribution}"
         df_strain = pd.read_csv(Strain_path, header=1)
 
         column_headers_strain = list(df_strain.columns.values)
@@ -518,28 +528,13 @@ def plot_strain_distribution(path, sub_folders):
 
         y_strain = df_strain[column_headers_strain[1]]
 
-        # f_strain = interpolate.interp1d(x_strain, y_strain, fill_value="extrapolate")
-
-        # xnew_strain = np.arange(0, int(x_strain.max()), 0.0001)
-        # # print("xnew: ", xnew_strain)
-        # ynew_strain = f_strain(xnew_strain)  # use interpolation function returned by `interp1d`
-
-        # plane_strain = f_strain(x_plane_strain)
         lablename = files
-        # print(f"{lablename}")
 
-        # labelname = f"{file}"
-        ax.plot(x_strain, y_strain, label=lablename, zorder=1)
-    ax.legend()
-    title = path.split("/")[2]
-    ax.set_title(f"Parameter: {title}")
-    ax.set_ylabel("Eq. Strain")
-    ax.set_xlabel("Section along middle line/[mm]")
-    plt.savefig(
-        f"{path}/{title}_strain_distribution.png", format="png", transparent=True
-    )
+        plt.plot(x_strain, y_strain, label=lablename, zorder=1)
 
-    plt.show()
+    plt.ylabel(f"{strain_type}")
+
+    # plt.show()
 
 
 def plot_strain(file_path):
@@ -599,16 +594,32 @@ def plot_strain(file_path):
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/N"
+    foldername = "YLD_2d_Investigation/M"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    gen_batch_post(foldername, sub_folders)
-    extract_datas(path, sub_folders)
+    print(sub_folders)
+    # gen_batch_post(foldername, sub_folders)
+    # extract_datas(path, sub_folders)
 
-    plot_strain_distribution(path, sub_folders)
-    plot_strain(path)
+
+    title = path.split("/")[2]
+    plt.title(f"Parameter: {title}")
+    plt.subplot(3, 1, 1)
+    plot_strain_distribution(path, sub_folders, "eq_strain")
+    plt.subplot(3, 1, 2)
+    plot_strain_distribution(path, sub_folders, "x_strain")
+    plt.subplot(3, 1, 3)
+    plot_strain_distribution(path, sub_folders, "y_strain")
+
+    plt.savefig(f"{path}/{title}_strain_distribution.png", format="png")
+    plt.xlabel("Section along middle line/[mm]")
+    plt.legend()
+
+    plt.show()
+
+    # plot_strain(path)
 
 
 if __name__ == "__main__":
