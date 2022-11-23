@@ -123,7 +123,7 @@ def extract_ThicknessReduction(fem_model):
 
     else:
         # source = str(dir + "/" + str(file))
-        print("\n", fem_model)
+        # print("\n", fem_model)
         df = pd.read_csv(source, header=1)
         # remove all string:"nan" from thickness reduction column
         if df["A1"].astype(str).str.contains("nan").any() == True:
@@ -204,10 +204,10 @@ def add_state(fem_model, state):
         # insert the limited state in gen_post.cfile
         a = [x.rstrip() for x in f]
         for item in a:
-            if item.startswith(f"state {state};"):
+            if item == f"state {state};":
                 print(f"state = {state} inserted already")
                 break
-            elif item.startswith("$# Strain Curve"):
+            elif item == "$# Strain Curve":
                 index_state = a.index(item, a.index(item))
 
                 a.insert(index_state, f"state {state};")
@@ -433,7 +433,9 @@ def extract_datas(path, sub_folders):
         
     for files in sub_folders:
         list_state.append(min_state)
+        fem_model = path + "/" + str(files)
         
+        print("\n\nfem_model: ", files)
 
         cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
 
