@@ -457,14 +457,14 @@ def extract_datas(path, sub_folders):
         list_uniaxial_strain.append(uniaxial_strain)
     # sort_values: descending
     # print("\nparameter:\n",parameter)
-    parameter_num = [float(elements) for elements in parameter]
+    # parameter_num = [float(elements) for elements in parameter]
     # print("\nparameter_num:\n",parameter_num)
 
     # print(list_triaxial_strain)
     df_Model = pd.DataFrame(
         {
             "Model_Name": sub_folders,
-            "Param": parameter_num,
+            "Param": parameter,
             # "ArmAngle": list_arm_deg,
             # "Angle": list_deg,
             # "Diameter": list_d,
@@ -599,7 +599,6 @@ def main():
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    print(sub_folders)
     # gen_batch_post(foldername, sub_folders)
     # extract_datas(path, sub_folders)
 
