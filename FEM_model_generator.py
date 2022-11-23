@@ -148,10 +148,9 @@ def extract_ThicknessReduction(fem_model):
 
         # list_ThicknessReduction.append(maxThicknessReduction)
 
-    return (
-        state,
-        max_index,
-    )
+    return state
+        # max_index,
+    # )
 
 
 def extract_angle_node(fem_model):
@@ -401,6 +400,7 @@ def extract_datas(path, sub_folders):
 
     # ThicknessReduction = []
     list_state = []
+    state_broken = []
     list_end_angle = []
 
     # plane strain of state "x"
@@ -411,7 +411,7 @@ def extract_datas(path, sub_folders):
 
     # triaxial strain
     list_triaxial_strain = []
-
+    min_state = None
     for files in sub_folders:
 
         parameter.append(re.findall("_(.*)", files)[0])
@@ -422,13 +422,22 @@ def extract_datas(path, sub_folders):
         print("\n")
         # remove_command_line(fem_model)
 
-        state, max_index = extract_ThicknessReduction(fem_model)
+        state= extract_ThicknessReduction(fem_model)
+        state_broken.append(state)
         print("\nstate: ", state)
-        list_state.append(state)
+        
+        if min_state is None or state < min_state:
+            min_state = state
+    max_index = min_state -1  
+    
+        
+    for files in sub_folders:
+        list_state.append(min_state)
+        
 
         cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
 
-        add_state(fem_model, state)
+        add_state(fem_model, min_state)
         add_cut_line(fem_model, cut_line)
         add_angle_command(fem_model, angle_command)
         end_angle = calc_end_angle(fem_model, max_index)
@@ -440,11 +449,11 @@ def extract_datas(path, sub_folders):
         list_triaxial_strain.append(triaxial_strain)
         list_plane_strain.append(plane_strain)
         list_uniaxial_strain.append(uniaxial_strain)
-    
+    print("min_state: ",min_state)
     # sort_values: descending
-    print("\nparameter:\n",parameter)
+    # print("\nparameter:\n",parameter)
     parameter_num = [float(elements) for elements in parameter]
-    print("\nparameter_num:\n",parameter_num)
+    # print("\nparameter_num:\n",parameter_num)
     
     # print(list_triaxial_strain)
     df_Model = pd.DataFrame(
@@ -455,6 +464,7 @@ def extract_datas(path, sub_folders):
             # "Angle": list_deg,
             # "Diameter": list_d,
             # "Position": list_x,
+            "state_broken": state_broken,
             "State": list_state,
             # "Y_Displacement": list_maxYDisplacement,
             # "Thickness_Reduction": list_ThicknessReduction,
@@ -587,12 +597,12 @@ def plot_strain(file_path):
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/M"
+    foldername = "YLD_2d_Investigation/N"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    # gen_batch_post(foldername, sub_folders)
+    gen_batch_post(foldername, sub_folders)
     extract_datas(path, sub_folders)
 
     plot_strain_distribution(path, sub_folders)
