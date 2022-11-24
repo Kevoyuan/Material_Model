@@ -136,7 +136,7 @@ def extract_ThicknessReduction(fem_model):
             df_A1 = df["A1"]
         else:
             df_A1 = df["A1"]
-        print("\ndf:", df)
+        # print("\ndf:", df)
         # convert string back to numeric
         df_A1 = df_A1.apply(pd.to_numeric)
 
@@ -175,16 +175,17 @@ def extract_y_displacement(fem_model,max_index):
 
     column_headers_Y = list(df_Y.columns.values)
 
-    Node2 = column_headers_Y[2]
+    Node2 = column_headers_Y[0]
     # print(column_headers_Y)
     # print(Node2)
 
-    df_Node2 = df_Y[Node2]
+    time_displacement = df_Y[column_headers_Y[0]]
+    df_y_displacement = df_Y[column_headers_Y[3]]
 
-    df_Node2 = df_Node2[df_Node2 <= maxTime]
-    index_Time = df_Node2.idxmax()
+    time_displacement = time_displacement[time_displacement <= maxTime]
+    index_Time = time_displacement.idxmax()
 
-    maxYDisplacement = df_Node2.iloc[index_Time]
+    maxYDisplacement = df_y_displacement.iloc[index_Time]
     return maxYDisplacement
 
     # print(list_maxYDisplacement)
@@ -499,7 +500,8 @@ def extract_datas(path, sub_folders):
     # print("\nparameter:\n",parameter)
     # parameter_num = [float(elements) for elements in parameter]
     # print("\nparameter_num:\n",parameter_num)
-
+    yy=np.std(list_maxYDisplacement)
+    print("\nStandard Deviation of Y Displacement:",yy)
     # print(list_triaxial_strain)
     df_Model = pd.DataFrame(
         {
@@ -631,25 +633,18 @@ def plot_strain(file_path):
     plt.savefig(f"{file_path}/{parameter_name}_strain_compare.png")
     plt.show()
 
-
-def main():
-    # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/M"
-
-    path = f"./{foldername}"
-
-    sub_folders = read_subfolders(path)
-    gen_batch_post(foldername, sub_folders)
-    extract_datas(path, sub_folders)
-
-
+def plot_3_strains(path, sub_folders):
     title = path.split("/")[2]
     plt.title(f"Parameter: {title}")
-    plt.subplot(3, 1, 1)
+    # plt.subplot(3, 1, 1)
     plot_strain_distribution(path, sub_folders, "eq_strain")
-    plt.subplot(3, 1, 2)
+    # plt.subplot(3, 1, 2)
+    plt.show()
+
     plot_strain_distribution(path, sub_folders, "x_strain")
-    plt.subplot(3, 1, 3)
+    # plt.subplot(3, 1, 3)
+    plt.show()
+
     plot_strain_distribution(path, sub_folders, "y_strain")
 
     plt.savefig(f"{path}/{title}_strain_distribution.png", format="png")
@@ -657,6 +652,19 @@ def main():
     plt.legend()
 
     plt.show()
+
+def main():
+    # foldername = "YLD_2d_Investigation/sig90"
+    foldername = "YLD_2d_Investigation/sig_b"
+
+    path = f"./{foldername}"
+
+    sub_folders = read_subfolders(path)
+    gen_batch_post(foldername, sub_folders)
+    extract_datas(path, sub_folders)
+
+    # plot_3_strains(path, sub_folders)
+
 
     # plot_strain(path)
 
