@@ -136,7 +136,7 @@ def extract_ThicknessReduction(fem_model):
             df_A1 = df["A1"]
         else:
             df_A1 = df["A1"]
-
+        print("\ndf:", df)
         # convert string back to numeric
         df_A1 = df_A1.apply(pd.to_numeric)
 
@@ -153,9 +153,42 @@ def extract_ThicknessReduction(fem_model):
 
         # list_ThicknessReduction.append(maxThicknessReduction)
 
-    return state
+    return state,df
     # max_index,
     # )
+
+def extract_y_displacement(fem_model,max_index):
+    source = f"{fem_model}/%ThicknessReduction.csv"
+
+    df = pd.read_csv(source, header=1)
+    # remove all string:"nan" from thickness reduction column
+    if df["A1"].astype(str).str.contains("nan").any() == True:
+        df = df[~df["A1"].str.contains("nan|-nan(ind)")]
+    df_time = df["Time"]
+
+    maxTime = df_time.iloc[max_index]
+    # print("maxTime: ", maxTime)
+
+    Y_path = f"{fem_model}/Y-displacement.csv"
+
+    df_Y = pd.read_csv(Y_path, skiprows=[0])
+
+    column_headers_Y = list(df_Y.columns.values)
+
+    Node2 = column_headers_Y[2]
+    # print(column_headers_Y)
+    # print(Node2)
+
+    df_Node2 = df_Y[Node2]
+
+    df_Node2 = df_Node2[df_Node2 <= maxTime]
+    index_Time = df_Node2.idxmax()
+
+    maxYDisplacement = df_Node2.iloc[index_Time]
+    return maxYDisplacement
+
+    # print(list_maxYDisplacement)
+
 
 
 def extract_angle_node(fem_model):
@@ -414,6 +447,9 @@ def extract_datas(path, sub_folders):
     # uniaxial strain
     list_uniaxial_strain = []
 
+    # y_displacememt
+    list_maxYDisplacement = []
+
     # triaxial strain
     list_triaxial_strain = []
     min_state = None
@@ -426,7 +462,8 @@ def extract_datas(path, sub_folders):
 
         # remove_command_line(fem_model)
 
-        state = extract_ThicknessReduction(fem_model)
+        state,df = extract_ThicknessReduction(fem_model)
+
         state_broken.append(state)
         print("\nbroken state: ", state)
 
@@ -438,6 +475,9 @@ def extract_datas(path, sub_folders):
     for files in sub_folders:
         list_state.append(min_state)
         fem_model = path + "/" + str(files)
+        maxYDisplacement = extract_y_displacement(fem_model,max_index)
+        list_maxYDisplacement.append(maxYDisplacement)
+
 
         print("\n\nfem_model: ", files)
 
@@ -471,7 +511,7 @@ def extract_datas(path, sub_folders):
             # "Position": list_x,
             "state_broken": state_broken,
             "State": list_state,
-            # "Y_Displacement": list_maxYDisplacement,
+            "Y_Displacement": list_maxYDisplacement,
             # "Thickness_Reduction": list_ThicknessReduction,
             # "Edge_Eq_Strains": list_maxStrain,
             "EndAngle": list_end_angle,
@@ -599,8 +639,8 @@ def main():
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    # gen_batch_post(foldername, sub_folders)
-    # extract_datas(path, sub_folders)
+    gen_batch_post(foldername, sub_folders)
+    extract_datas(path, sub_folders)
 
 
     title = path.split("/")[2]
