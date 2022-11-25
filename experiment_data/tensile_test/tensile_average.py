@@ -126,7 +126,7 @@ def gen_avg(min_len, temp_files,pl_strain):
 def main():
 
     tensile_deg = "DC06_l_0_"
-    pl_strain = 0.001
+    pl_strain = 0.2
 
     all_files = glob.glob(f"./experiment_data/tensile_test/{tensile_deg}*analysed.csv")
     print("\nall_files: ", all_files)
