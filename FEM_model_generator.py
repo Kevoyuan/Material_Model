@@ -593,10 +593,21 @@ def plot_distance(file_path):
 
     Labelname = f"parameter: {parameter_name}"
     # Variable = f"Distance"
-
+    
     df_var = pd.read_csv(file_path + "/test.csv")
-    df_var.groupby("Model_Name")["Distance"].mean().plot()
+    df_var.sort_values(
+        ["Param"],
+        axis=0,
+        # ascending=[False],
+        inplace=True,
+        ignore_index=True,
+    )
+    df_var.groupby("Param")["Distance"].mean().plot()
+    plt.xticks(np.linspace(df_var["Param"].min(), df_var["Param"].max(), len(df_var["Param"])))
+
+    plt.xlabel(Labelname)
     plt.ylabel("Distance to Center/[mm]")
+    plt.savefig(f"{file_path}/distance_to_center.png", format="png")
 
     plt.show()
 
@@ -611,12 +622,14 @@ def plot_strain(file_path):
     Variable = f"Param"
 
     df_var = pd.read_csv(file_path + "/test.csv")
-
+    df_var.sort_values(
+        ["Param"],
+        axis=0,
+        # ascending=[False],
+        inplace=True,
+        ignore_index=True,
+    )
     x_var = df_var[Variable]
-    x = np.array(x_var).reshape(-1, 1)
-
-    # y_tri_strain = df_var["Triaxial_Strain"]
-    # y = np.array(y_tri_strain)
 
     y_plane_strain = df_var["Plane_Strain"]
 
@@ -673,18 +686,18 @@ def plot_3_strains(path, sub_folders):
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/r_b"
+    foldername = "YLD_2d_Investigation/sig90"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
     # gen_batch_post(foldername, sub_folders)
-    # extract_datas(path, sub_folders)
+    extract_datas(path, sub_folders)
 
     plot_3_strains(path, sub_folders)
 
-    # plot_strain(path)
-    # plot_distance(path)
+    plot_strain(path)
+    plot_distance(path)
 
 
 if __name__ == "__main__":
