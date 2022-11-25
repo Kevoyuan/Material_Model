@@ -25,7 +25,7 @@ def read_subfolders(path):
     ]
     sub_folders = [ele for ele in sub_folders if ele not in remove_list]
     # print(sub_folders)
-    sub_folders= sorted(sub_folders, key=lambda s: float(s.split("_")[1]))
+    sub_folders = sorted(sub_folders, key=lambda s: float(s.split("_")[1]))
 
     return sub_folders
 
@@ -36,19 +36,17 @@ def find_nearest(array, value):
     return array[idx]
 
 
-def find_strain(TriaPath, StrainPath, strain_value):
+def find_strain(StrainPath, eq_StrainPath, strain_value):
     # calcuate the triaxial strain, plan strain and uniaxial strain
     # strain_value = 2/3, 1 / np.sqrt(3), 1/3
 
-    df_var = pd.read_csv(TriaPath, header=1)
+    df_var = pd.read_csv(StrainPath, header=1)
 
     column_headers_Tria = list(df_var.columns.values)
 
     x_var = df_var[column_headers_Tria[0]]
 
     y_var = df_var[column_headers_Tria[1]]
-
-    f_tri = interpolate.interp1d(x_var, y_var, fill_value="extrapolate")
 
     y_lim_idx = y_var.argmax()
     x_lim = x_var[y_lim_idx]
@@ -58,36 +56,26 @@ def find_strain(TriaPath, StrainPath, strain_value):
 
     x_lim = x_lim - 0.8
 
-    xnew = np.arange(x_lim, int(0.5 * x_var.max()), 0.0001)
-    # print("xnew: ", xnew)
-    ynew = f_tri(xnew)  # use interpolation function returned by `interp1d`
-    y_plane_strain = find_nearest(ynew, value=strain_value)
+    y_strain = find_nearest(y_var, value=strain_value)
 
-    for i in np.arange(x_lim, int(0.5 * x_var.max()), 0.0001):
-        if f_tri(i) == y_plane_strain:
-            break
+    plane_strain_position_idx = df_var[y_var == y_strain].index.values[0]
+    plane_strain_position = x_var.iloc[plane_strain_position_idx]
 
-    x_plane_strain = i
-
-    df_strain = pd.read_csv(StrainPath, header=1)
+    df_strain = pd.read_csv(eq_StrainPath, header=1)
 
     column_headers_strain = list(df_strain.columns.values)
 
-    x_strain = df_strain[column_headers_strain[0]]
+    df_eq_strain = df_strain[column_headers_strain[1]]
 
-    y_strain = df_strain[column_headers_strain[1]]
+    target_strain = df_eq_strain.iloc[plane_strain_position_idx]
+    print("\ny_strain_0:", y_strain)
 
-    f_strain = interpolate.interp1d(x_strain, y_strain, fill_value="extrapolate")
+    print("\ntarget_strain:", target_strain)
 
-    xnew_strain = np.arange(x_lim, int(0.5 * x_strain.max()), 0.0001)
-    # print("xnew: ", xnew_strain)
-    ynew_strain = f_strain(
-        xnew_strain
-    )  # use interpolation function returned by `interp1d`
+    plane_strain_position = abs(plane_strain_position - 0.5 * x_var.max())
+    print("\nplane_strain_position:", plane_strain_position)
 
-    target_strain = f_strain(x_plane_strain)
-
-    return target_strain
+    return target_strain, plane_strain_position
 
 
 def remove_command_line(fem_model):
@@ -153,17 +141,20 @@ def extract_ThicknessReduction(fem_model):
 
         # list_ThicknessReduction.append(maxThicknessReduction)
 
-    return state,df
+    return state, df
     # max_index,
     # )
 
-def extract_y_displacement(fem_model,max_index):
+
+def extract_y_displacement(fem_model, max_index):
     source = f"{fem_model}/%ThicknessReduction.csv"
 
     df = pd.read_csv(source, header=1)
+
     # remove all string:"nan" from thickness reduction column
     if df["A1"].astype(str).str.contains("nan").any() == True:
         df = df[~df["A1"].str.contains("nan|-nan(ind)")]
+
     df_time = df["Time"]
 
     maxTime = df_time.iloc[max_index]
@@ -175,7 +166,7 @@ def extract_y_displacement(fem_model,max_index):
 
     column_headers_Y = list(df_Y.columns.values)
 
-    Node2 = column_headers_Y[0]
+    # Node2 = column_headers_Y[0]
     # print(column_headers_Y)
     # print(Node2)
 
@@ -184,12 +175,13 @@ def extract_y_displacement(fem_model,max_index):
 
     time_displacement = time_displacement[time_displacement <= maxTime]
     index_Time = time_displacement.idxmax()
+    # print("\nmax_time: ",maxTime,max_index)
+    print("time_displacement: ", time_displacement.iloc[index_Time])
 
     maxYDisplacement = df_y_displacement.iloc[index_Time]
+    print("YDisplacement: ", maxYDisplacement)
+
     return maxYDisplacement
-
-    # print(list_maxYDisplacement)
-
 
 
 def extract_angle_node(fem_model):
@@ -433,6 +425,21 @@ def calc_strains(fem_model):
     return triaxial_strain, plane_strain, uniaxial_strain
 
 
+def find_plane_strain(fem_model):
+    # # curve of Triaxiality
+    y_strain_path = f"{fem_model}/y_strain.csv"
+
+    # # Strain Curve
+    Strain_path = f"{fem_model}/StrainCurve.csv"
+
+    # plane strain occures in y_strain = 0
+    y_strain = 0
+
+    plane_strain, distance = find_strain(y_strain_path, Strain_path, y_strain)
+
+    return plane_strain, distance
+
+
 def extract_datas(path, sub_folders):
     # parameter
     parameter = []
@@ -451,8 +458,8 @@ def extract_datas(path, sub_folders):
     # y_displacememt
     list_maxYDisplacement = []
 
-    # triaxial strain
-    list_triaxial_strain = []
+    # plane strain distance, position
+    list_distance = []
     min_state = None
     for files in sub_folders:
 
@@ -463,7 +470,7 @@ def extract_datas(path, sub_folders):
 
         # remove_command_line(fem_model)
 
-        state,df = extract_ThicknessReduction(fem_model)
+        state, df = extract_ThicknessReduction(fem_model)
 
         state_broken.append(state)
         print("\nbroken state: ", state)
@@ -476,9 +483,8 @@ def extract_datas(path, sub_folders):
     for files in sub_folders:
         list_state.append(min_state)
         fem_model = path + "/" + str(files)
-        maxYDisplacement = extract_y_displacement(fem_model,max_index)
+        maxYDisplacement = extract_y_displacement(fem_model, max_index)
         list_maxYDisplacement.append(maxYDisplacement)
-
 
         print("\n\nfem_model: ", files)
 
@@ -492,16 +498,18 @@ def extract_datas(path, sub_folders):
 
         add_arm_line(fem_model, end_angle, Tri_point)
 
-        triaxial_strain, plane_strain, uniaxial_strain = calc_strains(fem_model)
-        list_triaxial_strain.append(triaxial_strain)
+        # triaxial_strain, plane_strain, uniaxial_strain = calc_strains(fem_model)
+        plane_strain, distance = find_plane_strain(fem_model)
+        list_distance.append(distance)
+        # list_triaxial_strain.append(triaxial_strain)
         list_plane_strain.append(plane_strain)
-        list_uniaxial_strain.append(uniaxial_strain)
+        # list_uniaxial_strain.append(uniaxial_strain)
     # sort_values: descending
     # print("\nparameter:\n",parameter)
     # parameter_num = [float(elements) for elements in parameter]
     # print("\nparameter_num:\n",parameter_num)
-    yy=np.std(list_maxYDisplacement)
-    print("\nStandard Deviation of Y Displacement:",yy)
+    yy = np.std(list_maxYDisplacement)
+    print("\nStandard Deviation of Y Displacement:", yy)
     # print(list_triaxial_strain)
     df_Model = pd.DataFrame(
         {
@@ -518,8 +526,9 @@ def extract_datas(path, sub_folders):
             # "Edge_Eq_Strains": list_maxStrain,
             "EndAngle": list_end_angle,
             "Plane_Strain": list_plane_strain,
-            "Uniaxial_Strain": list_uniaxial_strain,
-            "Triaxial_Strain": list_triaxial_strain,
+            "Distance": list_distance,
+            # "Uniaxial_Strain": list_uniaxial_strain,
+            # "Triaxial_Strain": list_triaxial_strain,
         }
     )
     # df_Model["Param"] = df_Model["Param"].apply(pd.to_numeric)
@@ -579,6 +588,19 @@ def plot_strain_distribution(path, sub_folders, strain_type):
     # plt.show()
 
 
+def plot_distance(file_path):
+    parameter_name = file_path.split("/")[2]
+
+    Labelname = f"parameter: {parameter_name}"
+    # Variable = f"Distance"
+
+    df_var = pd.read_csv(file_path + "/test.csv")
+    df_var.groupby("Model_Name")["Distance"].mean().plot()
+    plt.ylabel("Distance to Center/[mm]")
+
+    plt.show()
+
+
 def plot_strain(file_path):
     # file_path: folder of variable
     # cuttingline: cutting section of the model in y = cuttingline
@@ -593,12 +615,12 @@ def plot_strain(file_path):
     x_var = df_var[Variable]
     x = np.array(x_var).reshape(-1, 1)
 
-    y_tri_strain = df_var["Triaxial_Strain"]
-    y = np.array(y_tri_strain)
+    # y_tri_strain = df_var["Triaxial_Strain"]
+    # y = np.array(y_tri_strain)
 
     y_plane_strain = df_var["Plane_Strain"]
 
-    y_uniaxial_strain = df_var["Uniaxial_Strain"]
+    # y_uniaxial_strain = df_var["Uniaxial_Strain"]
 
     y_state_var = df_var["State"]
     y_state_End_Angle = df_var["EndAngle"]
@@ -609,9 +631,9 @@ def plot_strain(file_path):
 
     plt.xticks(np.linspace(x_var.min(), x_var.max(), len(x_var)))
 
-    plt.plot(x_var, y_tri_strain, "o-", label="triaxial strain")
+    # plt.plot(x_var, y_tri_strain, "o-", label="triaxial strain")
     plt.plot(x_var, y_plane_strain, "o-", label="plane strain")
-    plt.plot(x_var, y_uniaxial_strain, "o-", label="uniaxial strain")
+    # plt.plot(x_var, y_uniaxial_strain, "o-", label="uniaxial strain")
 
     # plt.plot(x_var, y_pred, "r", label="fitted line")
     plt.ylabel("Eq_Strains")
@@ -619,7 +641,7 @@ def plot_strain(file_path):
 
     plt.legend()
 
-    ymax_tri_strain = max(y_tri_strain)
+    # ymax_tri_strain = max(y_tri_strain)
     # xpos_var = y_tri_strain.idxmax()
     # print(xpos_var)
     # xmax_var = x_var.iloc[xpos_var]
@@ -627,46 +649,42 @@ def plot_strain(file_path):
     for i, txt in enumerate(y_state_var):
         plt.annotate(txt, (x_var[i], y_plane_strain[i]))
 
-    for i, txt in enumerate(y_state_End_Angle):
-        plt.annotate(txt, (x_var[i], y_tri_strain[i] + 0.01 * ymax_tri_strain))
+    # for i, txt in enumerate(y_state_End_Angle):
+    #     plt.annotate(txt, (x_var[i], y_tri_strain[i] + 0.01 * ymax_tri_strain))
 
-    plt.savefig(f"{file_path}/{parameter_name}_strain_compare.png")
+    plt.savefig(f"{file_path}/{parameter_name}_plane_strain.png")
     plt.show()
+
 
 def plot_3_strains(path, sub_folders):
     title = path.split("/")[2]
     plt.title(f"Parameter: {title}")
-    # plt.subplot(3, 1, 1)
-    plot_strain_distribution(path, sub_folders, "eq_strain")
-    # plt.subplot(3, 1, 2)
-    plt.show()
 
-    plot_strain_distribution(path, sub_folders, "x_strain")
-    # plt.subplot(3, 1, 3)
-    plt.show()
+    strain_type_list = ["eq_strain", "x_strain", "y_strain"]
+    for strain_type in strain_type_list:
 
-    plot_strain_distribution(path, sub_folders, "y_strain")
+        plot_strain_distribution(path, sub_folders, strain_type)
+        plt.savefig(f"{path}/{strain_type}_strain_distribution.png", format="png")
+        plt.xlabel("Section along middle line/[mm]")
+        plt.legend()
 
-    plt.savefig(f"{path}/{title}_strain_distribution.png", format="png")
-    plt.xlabel("Section along middle line/[mm]")
-    plt.legend()
+        plt.show()
 
-    plt.show()
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/sig_b"
+    foldername = "YLD_2d_Investigation/r_b"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    gen_batch_post(foldername, sub_folders)
-    extract_datas(path, sub_folders)
+    # gen_batch_post(foldername, sub_folders)
+    # extract_datas(path, sub_folders)
 
-    # plot_3_strains(path, sub_folders)
-
+    plot_3_strains(path, sub_folders)
 
     # plot_strain(path)
+    # plot_distance(path)
 
 
 if __name__ == "__main__":
