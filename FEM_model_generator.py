@@ -675,7 +675,8 @@ def plot_3_strains(path, sub_folders):
         plt.show()
 
 def plot_yield_curve(path, sub_folders):
-    for files in sub_folders:
+    selected_folders = [sub_folders[0],sub_folders[3],sub_folders[5]]
+    for files in selected_folders:
 
         filepath = f"{path}/{files}/"
    
@@ -720,7 +721,7 @@ def plot_yield_curve(path, sub_folders):
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/N"
+    foldername = "YLD_2d_Investigation/r00"
 
     path = f"./{foldername}"
 
