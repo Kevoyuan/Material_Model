@@ -486,8 +486,14 @@ def extract_datas(path, sub_folders):
     max_index = min_state - 1
     print("\n\nmin_state: ", min_state)
 
+
     for files in sub_folders:
         list_state.append(min_state)
+
+        
+        # max_index = state -1
+        # list_state.append(state)
+
         fem_model = path + "/" + str(files)
         maxYDisplacement = extract_y_displacement(fem_model, max_index)
         list_maxYDisplacement.append(maxYDisplacement)
@@ -497,6 +503,8 @@ def extract_datas(path, sub_folders):
         # cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
 
         add_state(fem_model, min_state)
+        # add_state(fem_model, state)
+
         # add_cut_line(fem_model, cut_line)
         # add_angle_command(fem_model, angle_command)
         end_angle = calc_end_angle(fem_model, max_index)
@@ -728,19 +736,20 @@ def plot_yield_curve(path, sub_folders):
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/M"
+    foldername = "YLD_2d_Investigation/N"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    # gen_batch_post(foldername, sub_folders)
-    # extract_datas(path, sub_folders)
+    gen_batch_post(foldername, sub_folders)
+    extract_datas(path, sub_folders)
 
-    # plot_3_strains(path, sub_folders)
+    plot_3_strains(path, sub_folders)
 
-    # plot_strain(path)
-    plot_yield_curve(path, sub_folders)
-    # plot_distance(path)
+    plot_strain(path)
+    plot_distance(path)
+    # plot_yield_curve(path, sub_folders)
+
 
 
 if __name__ == "__main__":
