@@ -1,16 +1,21 @@
 import os
 import re
-import time
+
 
 import numpy as np
 import pandas as pd
-from scipy import interpolate
+
 
 from os.path import exists as file_exists
 from traceback import print_tb
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 from matplotlib.pyplot import figure
+
+
+import yld2000.YLD2000_2d_realM_EN as yld
+import YLD_2d_Investigation.Draw_Yield_curve as yldcurve
+from yld2000.plot_mult_yld import plot_yield
 
 # import YDisplacement
 
@@ -31,6 +36,7 @@ def read_subfolders(path):
 
 
 def find_nearest(array, value):
+    # find the nearest value in an array
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return array[idx]
@@ -409,7 +415,7 @@ def calc_strains(fem_model):
     # find id: triaxial
     triaxial_strain_type = 2 / 3
 
-    triaxial_strain,p = find_strain(Tria_path, Strain_path, triaxial_strain_type)
+    triaxial_strain, p = find_strain(Tria_path, Strain_path, triaxial_strain_type)
 
     # # find id: plane strain 1/sqr(3)
 
@@ -498,7 +504,7 @@ def extract_datas(path, sub_folders):
 
         # add_arm_line(fem_model, end_angle, Tri_point)
 
-        Biaxial_strain= calc_strains(fem_model)
+        Biaxial_strain = calc_strains(fem_model)
         plane_strain, distance = find_plane_strain(fem_model)
         list_distance.append(distance)
         list_Biaxial_strain.append(Biaxial_strain)
@@ -586,7 +592,6 @@ def plot_strain_distribution(path, sub_folders, strain_type):
     plt.ylabel(f"{strain_type}")
     plt.xlabel("Section along middle line/[mm]")
 
-
     # plt.show()
 
 
@@ -595,7 +600,7 @@ def plot_distance(file_path):
 
     Labelname = f"parameter: {parameter_name}"
     # Variable = f"Distance"
-    
+
     df_var = pd.read_csv(file_path + "/test.csv")
     df_var.sort_values(
         ["Param"],
@@ -605,7 +610,9 @@ def plot_distance(file_path):
         ignore_index=True,
     )
     df_var.groupby("Param")["Distance"].mean().plot()
-    plt.xticks(np.linspace(df_var["Param"].min(), df_var["Param"].max(), len(df_var["Param"])))
+    plt.xticks(
+        np.linspace(df_var["Param"].min(), df_var["Param"].max(), len(df_var["Param"]))
+    )
 
     plt.xlabel(Labelname)
     plt.ylabel("Distance to Center/[mm]")
@@ -674,54 +681,54 @@ def plot_3_strains(path, sub_folders):
         plt.savefig(f"{path}/{strain_type}_strain_distribution.png", format="png")
         plt.show()
 
+
 def plot_yield_curve(path, sub_folders):
-    selected_folders = [sub_folders[0],sub_folders[3],sub_folders[5]]
-    for files in selected_folders:
 
-        filepath = f"{path}/{files}/"
-   
-        sig_x_path = f"{filepath}/sigma_x.csv"
-        sig_y_path = f"{filepath}/sigma_y.csv"
-        sig_eq_path = f"{filepath}/sigma_eq.csv"
+    selected_folders = [sub_folders[1], sub_folders[4], sub_folders[-1]]
+    print(selected_folders)
+    
+    for i in range(len(selected_folders)): 
+
+        # extract parameter and value by reading folders
+        parameter = selected_folders[i].split("_")
+        parameter_value = float(parameter[1])
+        print(selected_folders[i])
+
+        # "sig_00, sig_45, sig_90, sig_b, r_00, r_45, r_90, r_b, M"
+        ex_value = [1, 1.0251, 0.9893, 1.2023, 2.1338, 1.5367, 2.2030, 0.8932, 6]
+        # print(parameter_value)
+
+        # replace the parameter value in ex value 
+        if parameter[0] == "M":
+            ex_value = [parameter_value if x == ex_value[8] else x for x in ex_value]
+        if parameter[0] == "rb":
+            ex_value = [parameter_value if x == ex_value[7] else x for x in ex_value]
+        if parameter[0] == "r90":
+            ex_value = [parameter_value if x == ex_value[6] else x for x in ex_value]       
+        if parameter[0] == "r45":
+            ex_value = [parameter_value if x == ex_value[5] else x for x in ex_value]
+        if parameter[0] == "r00":
+            ex_value = [parameter_value if x == ex_value[4] else x for x in ex_value]
+        if parameter[0] == "sigb":
+            ex_value = [parameter_value if x == ex_value[3] else x for x in ex_value]
+        if parameter[0] == "sig90":
+            ex_value = [parameter_value if x == ex_value[2] else x for x in ex_value]
+        if parameter[0] == "sig45":
+            ex_value = [parameter_value if x == ex_value[1] else x for x in ex_value]
+        print("\n",ex_value)
+
+        # yld.export(ex_value,path,selected_folders[i])
+        # yldcurve.export_yieldcurve(path,selected_folders[i])
+    plot_yield(path)
+    
 
 
-
-        df_x = pd.read_csv(sig_x_path, header=1)
-        df_y = pd.read_csv(sig_y_path, header=1)
-        df_eq = pd.read_csv(sig_eq_path, header=1)
-
-
-        column_headers_x = list(df_x.columns.values)
-        column_headers_y = list(df_y.columns.values)
-        column_headers_eq = list(df_eq.columns.values)
-
-
-
-
-
-        sigma_x = df_x[column_headers_x[1]]
-        sigma_y = df_y[column_headers_y[1]]
-        sigma_eq = df_eq[column_headers_eq[1]]
-
-        y = sigma_y/sigma_x.max()
-        x = sigma_x/sigma_x.max()
-
-        # plt.scatter(x, y)
-        plt.plot(x, y, "-",label=f"{files}")
-
-
-        plt.xlabel(r'$\sigma_x/\sigma_{eq}$')
-
-        plt.ylabel(r'$\sigma_y/\sigma_{eq}$')
-        # plt.savefig(filepath+"/sigma.svg")
-    plt.legend()
-    plt.show()
 
 
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/r00"
+    foldername = "YLD_2d_Investigation/M"
 
     path = f"./{foldername}"
 
@@ -734,7 +741,6 @@ def main():
     # plot_strain(path)
     plot_yield_curve(path, sub_folders)
     # plot_distance(path)
-   
 
 
 if __name__ == "__main__":
