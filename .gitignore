@@ -65,3 +65,5 @@ fit_polynominal*
 yld2000/YLD2000-2d_realM_EN.py
 experiment_data/tensile_test/tensile_average.py
 modify_keyword.py
+experiment_data/tensile_test/tensile_test.ipynb
+fit_tri.ipynb
