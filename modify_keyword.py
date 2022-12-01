@@ -36,7 +36,7 @@ def main():
 
     modify_parameter = "SwiftN"
 
-    path = f"YLD_2d_Investigation/N_iso"
+    path = f"YLD_2d_Investigation/N"
 
     if modify_parameter == "M":
         changed_parameter = " M "
