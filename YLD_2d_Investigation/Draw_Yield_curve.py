@@ -61,18 +61,15 @@ def cal_sig_b_xy(ratio, M, a1, a2, a3, a4, a5, a6, a7, a8):
 
 # Change the number of file
 
-def export_yieldcurve(path,name):
+
+def export_yield_curve(path, name):
     # true file name and read parameters
     file_01 = f"{path}/{name}.csv"
     M_01, alpha_01 = read_parameter(file_01)
 
-
-
-
     # 読み込んだ値の確認
     print(M_01)
     print(alpha_01)
-
 
     # If you want to draw with your own values, enable following comments and overwrite the values here.
     # M_01=8
@@ -85,7 +82,6 @@ def export_yieldcurve(path,name):
 
     sigma1_bxy = []
 
-
     for i in range(0, 91, 1):  # シータを0degから90degまで1deg間隔
         # シータから応力比の取得
         ratio = np.tan(np.radians(i))
@@ -94,24 +90,18 @@ def export_yieldcurve(path,name):
         #        parameter1 = [ratio, round(M_01), alpha_01[0], alpha_01[1], alpha_01[2], alpha_01[3], alpha_01[4], alpha_01[5], alpha_01[6], alpha_01[7]]
         parameter1 = [ratio, M_01] + [alpha_01[i] for i in range(8)]
 
-
         # Yld2000-2dの応力点の取得 Yld2000-2dパラメータと応力比を入力
         # X応力,Y応力
 
         sig1_x_y = cal_sig_x_y(*parameter1)
 
-
         sigma1.extend(sig1_x_y)
-
 
         # Yld2000-2dの応力点の取得 Yld2000-2dパラメータと応力比を入力
         # 等二軸応力,XYせん断応力
         sig1_b_xy = cal_sig_b_xy(*parameter1)
 
-
         sigma1_bxy.extend(sig1_b_xy)
-
-
 
     sig1_x1 = np.array(sigma1)[:, 0]
     sig1_y1 = np.array(sigma1)[:, 1]
@@ -119,7 +109,6 @@ def export_yieldcurve(path,name):
     #
     sig1_x2 = np.array(sigma1_bxy)[:, 0]
     sig1_y2 = np.array(sigma1_bxy)[:, 1]
-
 
     df = pd.DataFrame(
         {
