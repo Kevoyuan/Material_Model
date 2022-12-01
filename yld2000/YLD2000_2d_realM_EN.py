@@ -426,14 +426,14 @@ def export_config(name, text, config):
 # -------------------------------以下実行部--------------------------------
 # 実行文
 # mode="Input"
-mode = "As follows"
+# mode = "As follows"
 # ex_value=[1,1.038,1.020,1.064,2.477,1.762,2.500,0.93,4.27435]
-ex_value = [1, 1.0251, 0.9893, 1.2023, 2.1338, 1.5367, 2.2030, 0.8932, 4.5]
+# ex_value = [1, 1.0251, 0.9893, 1.2023, 2.1338, 1.5367, 2.2030, 0.8932, 4.5]
 
 
-if mode == "Input":
-    ex_value = input_ex_value()
-
-ex_value, alpha_list = exe_create_YLD2000_2d_parameter(ex_value)
-# 同定結果の書出し設定 (csvの名前, 変更しない, 'Y' or 'N')
-export_config("./yld2000/Parameters_yld2000-2d_02.csv", ex_value + alpha_list, "Y")
+# if mode == "Input":
+#     ex_value = input_ex_value()
+def export(ex_value,path,name):
+    ex_value, alpha_list = exe_create_YLD2000_2d_parameter(ex_value)
+    # 同定結果の書出し設定 (csvの名前, 変更しない, 'Y' or 'N')
+    export_config(f"{path}/{name}.csv", ex_value + alpha_list, "Y")
