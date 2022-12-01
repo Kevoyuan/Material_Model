@@ -34,9 +34,9 @@ def main():
     # path = f"YLD_2d_Investigation/{modify_parameter}"
 
 
-    modify_parameter = "sig90"
+    modify_parameter = "SwiftN"
 
-    path = f"YLD_2d_Investigation/{modify_parameter}"
+    path = f"YLD_2d_Investigation/N_iso"
 
     if modify_parameter == "M":
         changed_parameter = " M "
@@ -60,7 +60,7 @@ def main():
 
         new_value = val[1]
         # print(new_value)
-        new_text = f"R   {changed_parameter}       {new_value}"
+        new_text = f"R  {changed_parameter}       {new_value}"
         print("\nmodified new value:\n",new_text)
 
         print("file_path: ", file_path)
