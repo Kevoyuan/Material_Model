@@ -433,7 +433,7 @@ def export_config(name, text, config):
 
 # if mode == "Input":
 #     ex_value = input_ex_value()
-def export(ex_value,path,name):
+def export_yld_parameter(ex_value,path,name):
     ex_value, alpha_list = exe_create_YLD2000_2d_parameter(ex_value)
     # 同定結果の書出し設定 (csvの名前, 変更しない, 'Y' or 'N')
     export_config(f"{path}/{name}.csv", ex_value + alpha_list, "Y")
