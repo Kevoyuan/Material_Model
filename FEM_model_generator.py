@@ -13,8 +13,8 @@ import matplotlib.image as mpimg
 from matplotlib.pyplot import figure
 
 
-import yld2000.YLD2000_2d_realM_EN as yld
-import YLD_2d_Investigation.Draw_Yield_curve as yldcurve
+from yld2000.YLD2000_2d_realM_EN import export_yld_parameter
+from YLD_2d_Investigation.Draw_Yield_curve import export_yield_curve
 from yld2000.plot_mult_yld import plot_yield
 
 # import YDisplacement
@@ -684,7 +684,7 @@ def plot_3_strains(path, sub_folders):
 
 def plot_yield_curve(path, sub_folders):
 
-    selected_folders = [sub_folders[1], sub_folders[4], sub_folders[-1]]
+    selected_folders = [sub_folders[1], sub_folders[3], sub_folders[-1]]
     print(selected_folders)
     
     for i in range(len(selected_folders)): 
@@ -717,8 +717,8 @@ def plot_yield_curve(path, sub_folders):
             ex_value = [parameter_value if x == ex_value[1] else x for x in ex_value]
         print("\n",ex_value)
 
-        # yld.export(ex_value,path,selected_folders[i])
-        # yldcurve.export_yieldcurve(path,selected_folders[i])
+        export_yld_parameter(ex_value,path,selected_folders[i])
+        export_yield_curve(path,selected_folders[i])
     plot_yield(path)
     
 
