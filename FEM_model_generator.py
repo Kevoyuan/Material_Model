@@ -1,24 +1,22 @@
 import os
 import re
 
-
 import numpy as np
 import pandas as pd
-
 
 from os.path import exists as file_exists
 from traceback import print_tb
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 from matplotlib.pyplot import figure
+from Extract_data_from_result import extract_ThicknessReduction, extract_y_displacement
+from Modify_postfile import add_state, calc_end_angle
+from generate_batch_files import gen_batch_post
 
 
 from yld2000.YLD2000_2d_realM_EN import export_yld_parameter
 from YLD_2d_Investigation.Draw_Yield_curve import export_yield_curve
 from yld2000.plot_mult_yld import plot_yield
-
-# import YDisplacement
-
 
 def read_subfolders(path):
     # find all sub folders under target directory
@@ -97,312 +95,6 @@ def remove_command_line(fem_model):
         f.writelines(data[pos:])
 
     print(f"unneccessary lines in {fem_model} removed\n")
-
-
-def gen_batch_post(foldername, sub_folders):
-    # generate a batch file to extract data at one time
-    with open(f"./{foldername}/post_command.bat", "w") as f:
-        f.write("@echo off\n\n")
-
-        for i in sub_folders:
-            i = foldername + "\\" + str(i)
-            dir = str("Z:\MA\Material_Model" + "\\" + i)
-            command_line = f'start /D "{dir}" post_command.bat'
-            # print(command_line)
-            f.write(f'\nstart /D "{dir}" post_command.bat\n\n')
-
-        f.write("\n\necho *** FINISHED WITH POST COMMAND SCRIPT ***")
-    print("\nBatch File generated!\n")
-
-
-def extract_ThicknessReduction(fem_model):
-    source = f"{fem_model}/%ThicknessReduction.csv"
-    if not file_exists(source):
-        print("File %ThicknessReduction.csv not exist in folder: ", fem_model)
-
-    else:
-        # source = str(dir + "/" + str(file))
-        # print("\n", fem_model)
-        df = pd.read_csv(source, header=1)
-        # remove all string:"nan" from thickness reduction column
-        if df["A1"].astype(str).str.contains("nan").any() == True:
-            df = df[~df["A1"].str.contains("nan|-nan(ind)")]
-            df_A1 = df["A1"]
-        else:
-            df_A1 = df["A1"]
-        # print("\ndf:", df)
-        # convert string back to numeric
-        df_A1 = df_A1.apply(pd.to_numeric)
-
-        df_A1 = df_A1[df_A1 < 30]
-        # print(df_A1)
-        max_index = df_A1.idxmax()
-        # print(max_index)
-
-        # maxThicknessReduction = df_A1.max()
-        state = max_index + 1
-
-        # print(f"state: {max_index+1}\n")
-        # maxThicknessReduction = round(maxThicknessReduction, 3)
-
-        # list_ThicknessReduction.append(maxThicknessReduction)
-
-    return state, df
-    # max_index,
-    # )
-
-
-def extract_y_displacement(fem_model, max_index):
-    source = f"{fem_model}/%ThicknessReduction.csv"
-
-    df = pd.read_csv(source, header=1)
-
-    # remove all string:"nan" from thickness reduction column
-    if df["A1"].astype(str).str.contains("nan").any() == True:
-        df = df[~df["A1"].str.contains("nan|-nan(ind)")]
-
-    df_time = df["Time"]
-
-    maxTime = df_time.iloc[max_index]
-    # print("maxTime: ", maxTime)
-
-    Y_path = f"{fem_model}/Y-displacement.csv"
-
-    df_Y = pd.read_csv(Y_path, skiprows=[0])
-
-    column_headers_Y = list(df_Y.columns.values)
-
-    # Node2 = column_headers_Y[0]
-    # print(column_headers_Y)
-    # print(Node2)
-
-    time_displacement = df_Y[column_headers_Y[0]]
-    df_y_displacement = df_Y[column_headers_Y[3]]
-
-    time_displacement = time_displacement[time_displacement <= maxTime]
-    index_Time = time_displacement.idxmax()
-    # print("\nmax_time: ",maxTime,max_index)
-    print("time_displacement: ", time_displacement.iloc[index_Time])
-
-    maxYDisplacement = df_y_displacement.iloc[index_Time]
-    print("YDisplacement: ", maxYDisplacement)
-
-    return maxYDisplacement
-
-
-def extract_angle_node(fem_model):
-    with open(f"{fem_model}/lspost.msg", "r") as fp:
-        a = [x.rstrip() for x in fp]
-        is_second_occurance = 0
-        for item in a:
-            if item.startswith("NODE"):
-                if is_second_occurance == 1:
-                    l2 = item.split()
-                    Tri_point = l2[2]
-                    print("tri point:", Tri_point)
-                    is_second_occurance += 1
-                elif is_second_occurance == 2:
-                    l2 = item.split()
-                    angle1 = l2[2]
-                    print("angle1:", angle1)
-                    is_second_occurance += 1
-
-                elif is_second_occurance == 3:
-                    l2 = item.split()
-                    angle2 = l2[2]
-                    print("angle2:", angle2)
-                    is_second_occurance += 1
-
-                elif is_second_occurance == 4:
-                    l2 = item.split()
-                    angle3 = l2[2]
-                    print("angle3:", angle3)
-                    break
-
-                else:
-                    idx1 = a.index(item, a.index(item))
-                    l1 = item.split()
-                    id1 = l1[2]
-                    print("center point:", id1)
-
-                    is_second_occurance += 1
-
-        cut_line = f"splane dep1 {id1}  0.000  1.000  0.000"
-        print("center cut line: ", cut_line)
-
-        # insert "limited Thickness Reduction state" in gen_pos.cfile
-
-        angle_command = f"measure angle3 N{angle1}/0 N{angle2}/0 N{angle3}/0 ;"
-    return cut_line, angle_command, Tri_point
-
-
-def add_state(fem_model, state):
-    with open(f"{fem_model}/gen_post.cfile", "r+") as f:
-        # insert the limited state in gen_post.cfile
-        a = [x.rstrip() for x in f]
-        for item in a:
-            if item == f"state {state};":
-                print(f"state = {state} inserted already")
-                break
-            elif item == "$# Strain Curve":
-                index_state = a.index(item, a.index(item))
-
-                a.insert(index_state, f"state {state};")
-                # Inserts "Hello everyone" into `a`
-                print(f"state = {state} inserted!")
-
-                break
-        f.seek(0)
-        f.truncate()
-        # Write each line back
-        for line in a:
-            f.write(line + "\n")
-
-
-def add_cut_line(fem_model, cut_line):
-    with open(f"{fem_model}/gen_post.cfile", "r+") as f:
-        a = [x.rstrip() for x in f]
-
-        for item in a:
-
-            if item.startswith(cut_line):
-                print("Section NODE inserted already")
-                if "splane drawcut" in item:
-                    idx1 = a.index(item, a.index(item))
-                    print("index1 =  ", idx1)
-
-                    idx2 = a.index(item, idx1 + 2)
-                    print("index2 =  ", idx2)
-
-                    idx3 = a.index(item, idx2 + 2)
-                    print("index3 =  ", idx3)
-
-                    idx4 = a.index(item, idx3 + 2)
-                    print("index4 =  ", idx4)
-
-                    idx5 = a.index(item, idx4 + 2)
-                    print("index5 =  ", idx5)
-
-                break
-
-            elif item.startswith("splane drawcut"):
-
-                idx1 = a.index(item, a.index(item))
-                print("index1 =  ", idx1)
-                a.insert(idx1, cut_line)
-
-                idx2 = a.index(item, idx1 + 2)
-                print("index2 =  ", idx2)
-                a.insert(idx2, cut_line)
-
-                idx3 = a.index(item, idx2 + 2)
-                print("index3 =  ", idx3)
-                a.insert(idx3, cut_line)
-
-                idx4 = a.index(item, idx3 + 2)
-                print("index4 =  ", idx4)
-                a.insert(idx4, cut_line)
-
-                idx5 = a.index(item, idx4 + 2)
-                print("index5 =  ", idx5)
-                a.insert(idx5, cut_line)
-
-                # idx6 = a.index(item, idx5 + 3)
-                # print("index6 =  ", idx6)
-                # a.insert(idx6, cut_line_60)
-                print("Section NODE inserted!")
-
-                break
-        f.seek(0)
-        f.truncate()
-        # Write each line back
-        for line in a:
-            f.write(line + "\n")
-
-
-def add_angle_command(fem_model, angle_command):
-    with open(f"{fem_model}/gen_post.cfile", "r+") as f:
-        a = [x.rstrip() for x in f]
-        for item in a:
-
-            if item.startswith(angle_command):
-                print("Angle NODE inserted already")
-                break
-            elif item.startswith("measure history angle3 a"):
-                idx_angle = a.index(item, a.index(item))
-                print("idx_angle =  ", idx_angle)
-                a.insert(idx_angle, angle_command)
-                break
-        f.seek(0)
-        f.truncate()
-        # Write each line back
-        for line in a:
-            f.write(line + "\n")
-
-
-def calc_end_angle(fem_model, max_index):
-    # measure the arm angle at state "x"
-    end_angle_path = f"{fem_model}/ArmAngle2.csv"
-    if not file_exists(end_angle_path):
-        end_angle = 0
-        # list_end_angle.append(end_angle)
-
-        print("File ArmAngle2.csv not exist in folder: ", fem_model)
-    else:
-
-        df_end_angle = pd.read_csv(end_angle_path, skiprows=[0])
-
-        column_headers_end_angle = list(df_end_angle.columns.values)
-
-        end_angles = column_headers_end_angle[1]
-
-        df_end_angle = df_end_angle[end_angles]
-        end_angle = float(df_end_angle[max_index]) - 90
-        print("end_angle: ", end_angle)
-
-    return end_angle
-
-
-def add_arm_line(fem_model, end_angle, Tri_point):
-    section_angle = round(np.tan(end_angle * np.pi / 180), 3)
-    arm_line = f"splane dep1 {Tri_point}  {section_angle}  1.000  0.000"
-    # print(arm_line)
-
-    with open(f"{fem_model}/gen_post.cfile", "r+") as fa:
-        a = [x.rstrip() for x in fa]
-
-        for item in a:
-
-            if "splane drawcut" in item:
-                idx1 = a.index(item, a.index(item))
-
-                idx2 = a.index(item, idx1 + 2)
-
-                idx3 = a.index(item, idx2 + 2)
-
-                idx4 = a.index(item, idx3 + 2)
-
-                idx5 = a.index(item, idx4 + 2)
-
-                idx6 = a.index(item, idx5 + 2)
-                # line = a.readlines()
-                print("arm lline: ", a[idx6 - 1])
-                if arm_line == a[idx6 - 1]:
-
-                    print("NODE for arm line inserted already")
-                    break
-                else:
-                    print("index6 =  ", idx6)
-                    a.insert(idx6, arm_line)
-                    print("arm_line inserted!")
-                    break
-
-        # Go to start of file and clear it
-        fa.seek(0)
-        fa.truncate()
-        # Write each line back
-        for line in a:
-            fa.write(line + "\n")
 
 
 def calc_strains(fem_model):
@@ -486,11 +178,9 @@ def extract_datas(path, sub_folders):
     max_index = min_state - 1
     print("\n\nmin_state: ", min_state)
 
-
     for files in sub_folders:
         list_state.append(min_state)
 
-        
         # max_index = state -1
         # list_state.append(state)
 
@@ -694,8 +384,8 @@ def plot_yield_curve(path, sub_folders):
 
     selected_folders = [sub_folders[0], sub_folders[2], sub_folders[-1]]
     print(selected_folders)
-    
-    for i in range(len(selected_folders)): 
+
+    for i in range(len(selected_folders)):
 
         # extract parameter and value by reading folders
         parameter = selected_folders[i].split("_")
@@ -706,22 +396,18 @@ def plot_yield_curve(path, sub_folders):
         ex_value = [1, 1.0251, 0.9893, 1.2023, 2.1338, 1.5367, 2.2030, 0.8932, 6]
         print(parameter[0])
 
-        # replace the parameter value in ex value 
+        # replace the parameter value in ex value
         ex_value_index = ex_para.index(parameter[0])
         print(ex_value_index)
-        ex_value = [parameter_value if x == ex_value[ex_value_index] else x for x in ex_value]
-        
-        
-        
-        print("\n",ex_value)
+        ex_value = [
+            parameter_value if x == ex_value[ex_value_index] else x for x in ex_value
+        ]
+
+        print("\n", ex_value)
 
         # export_yld_parameter(ex_value,path,selected_folders[i])
-        export_yield_curve(path,selected_folders[i])
+        export_yield_curve(path, selected_folders[i])
     plot_yield(path)
-    
-
-
-
 
 
 def main():
@@ -732,14 +418,13 @@ def main():
 
     sub_folders = read_subfolders(path)
     gen_batch_post(foldername, sub_folders)
-    # extract_datas(path, sub_folders)
+    extract_datas(path, sub_folders)
 
     # plot_3_strains(path, sub_folders)
 
     # plot_strain(path)
     # plot_distance(path)
     plot_yield_curve(path, sub_folders)
-
 
 
 if __name__ == "__main__":
