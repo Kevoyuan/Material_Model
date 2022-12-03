@@ -692,7 +692,7 @@ def plot_3_strains(path, sub_folders):
 
 def plot_yield_curve(path, sub_folders):
 
-    selected_folders = [sub_folders[1], sub_folders[3], sub_folders[-1]]
+    selected_folders = [sub_folders[0], sub_folders[2], sub_folders[-1]]
     print(selected_folders)
     
     for i in range(len(selected_folders)): 
@@ -702,30 +702,20 @@ def plot_yield_curve(path, sub_folders):
         parameter_value = float(parameter[1])
         print(selected_folders[i])
 
-        # "sig_00, sig_45, sig_90, sig_b, r_00, r_45, r_90, r_b, M"
+        ex_para = ["sig00", "sig45", "sig90", "sigb", "r00", "r45", "r90", "rb", "M"]
         ex_value = [1, 1.0251, 0.9893, 1.2023, 2.1338, 1.5367, 2.2030, 0.8932, 6]
-        # print(parameter_value)
+        print(parameter[0])
 
         # replace the parameter value in ex value 
-        if parameter[0] == "M":
-            ex_value = [parameter_value if x == ex_value[8] else x for x in ex_value]
-        if parameter[0] == "rb":
-            ex_value = [parameter_value if x == ex_value[7] else x for x in ex_value]
-        if parameter[0] == "r90":
-            ex_value = [parameter_value if x == ex_value[6] else x for x in ex_value]       
-        if parameter[0] == "r45":
-            ex_value = [parameter_value if x == ex_value[5] else x for x in ex_value]
-        if parameter[0] == "r00":
-            ex_value = [parameter_value if x == ex_value[4] else x for x in ex_value]
-        if parameter[0] == "sigb":
-            ex_value = [parameter_value if x == ex_value[3] else x for x in ex_value]
-        if parameter[0] == "sig90":
-            ex_value = [parameter_value if x == ex_value[2] else x for x in ex_value]
-        if parameter[0] == "sig45":
-            ex_value = [parameter_value if x == ex_value[1] else x for x in ex_value]
+        ex_value_index = ex_para.index(parameter[0])
+        print(ex_value_index)
+        ex_value = [parameter_value if x == ex_value[ex_value_index] else x for x in ex_value]
+        
+        
+        
         print("\n",ex_value)
 
-        export_yld_parameter(ex_value,path,selected_folders[i])
+        # export_yld_parameter(ex_value,path,selected_folders[i])
         export_yield_curve(path,selected_folders[i])
     plot_yield(path)
     
@@ -736,19 +726,19 @@ def plot_yield_curve(path, sub_folders):
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/N"
+    foldername = "YLD_2d_Investigation/sig_b"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
     gen_batch_post(foldername, sub_folders)
-    extract_datas(path, sub_folders)
+    # extract_datas(path, sub_folders)
 
-    plot_3_strains(path, sub_folders)
+    # plot_3_strains(path, sub_folders)
 
-    plot_strain(path)
-    plot_distance(path)
-    # plot_yield_curve(path, sub_folders)
+    # plot_strain(path)
+    # plot_distance(path)
+    plot_yield_curve(path, sub_folders)
 
 
 
