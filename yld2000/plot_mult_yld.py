@@ -11,18 +11,19 @@ def plot_yield(path):
 
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2)
+    
+    csv_files = sorted(csv_files, key=lambda s: float(s.split("_")[4]))
+    
 
     for file in csv_files:
 
-        print(file.split("_"))
-        # if "001" in file:
-        #     legendname = "eq_strain = 0.01"
-        # if "005" in file:
-        #     legendname = "eq_strain = 0.05"
-        # if "02" in file:
-        #     legendname = "eq_strain = 0.2"
-        parameter = file.split("\\")[1].split("_")[0]
-        value = file.split("\\")[1].split("_")[1]
+        # print(file.split("/"))
+        if "\\" in file:
+            file = file.replace("\\", "/")
+        print("\nfile: ",file)
+
+        parameter = file.split("/")[3].split("_")[0]
+        value = file.split("/")[1].split("_")[1]
         legendname = f"{parameter}_{value}"
 
 
