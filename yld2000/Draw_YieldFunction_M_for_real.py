@@ -60,7 +60,7 @@ def cal_sig_b_xy(ratio, M, a1, a2, a3, a4, a5, a6, a7, a8):
 
 
 # Change the number of file
-file_No_true = "02"  # true parameters
+file_No_true = "test"  # true parameters
 file_No = 1  # predict parameters
 file_end = "_20221101.png"
 
