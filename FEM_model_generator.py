@@ -306,13 +306,19 @@ def plot_distance(file_path):
         inplace=True,
         ignore_index=True,
     )
-    df_var.groupby("Param")["Distance"].mean().plot()
+    
+    
+    x = df_var["Param"]
+    y = df_var["Distance"]
+    plt.plot(x, y, "o-")
+
     plt.xticks(
         np.linspace(df_var["Param"].min(), df_var["Param"].max(), len(df_var["Param"]))
     )
 
     plt.xlabel(Labelname)
-    plt.ylabel("Distance to Center/[mm]")
+    plt.ylabel("Position of Plane Strain to Center/[mm]")
+    plt.ylim(2.5,6)
     plt.savefig(f"{file_path}/distance_to_center.png", format="png")
 
     plt.show()
@@ -357,6 +363,7 @@ def plot_strain(file_path):
     # plt.plot(x_var, y_pred, "r", label="fitted line")
     plt.ylabel("Eq_Strains")
     plt.xlabel(Labelname)
+    plt.ylim(0, 0.1)
 
     plt.legend()
 
@@ -411,7 +418,7 @@ def plot_yield_curve(path, sub_folders):
 
 def main():
     # foldername = "YLD_2d_Investigation/sig90"
-    foldername = "YLD_2d_Investigation/M"
+    foldername = "YLD_2d_Investigation/r45"
 
     path = f"./{foldername}"
 
@@ -422,8 +429,8 @@ def main():
     # plot_3_strains(path, sub_folders)
 
     # plot_strain(path)
-    # plot_distance(path)
-    plot_yield_curve(path, sub_folders)
+    plot_distance(path)
+    # plot_yield_curve(path, sub_folders)
 
 
 if __name__ == "__main__":
