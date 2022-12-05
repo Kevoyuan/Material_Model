@@ -25,21 +25,21 @@ def read_csv_files(filename):
     return length, x, y, eps_x, eps_y, phiM
 
 
-def calib_x(eps_x, length):
-    eps_x_array = np.array(eps_x).reshape(-1, 1)
-    eps_x_newarr = np.array_split(eps_x_array, 2)
+def calib_x(phiM, length):
+    phiM = np.array(phiM).reshape(-1, 1)
+    phiM_newarr = np.array_split(phiM, 2)
 
     # print(newarr)
-    loccal_max_index1 = eps_x_newarr[0].argmax(axis=0)[0]
-    loccal_max_index2 = eps_x_newarr[1].argmax(axis=0)[0]
+    loccal_min_index1 = phiM_newarr[0].argmin(axis=0)[0]
+    loccal_min_index2 = phiM_newarr[1].argmin(axis=0)[0]
 
     length_array = np.array(length).reshape(-1, 1)
     length_newarr = np.array_split(length_array, 2)
-    length_max1 = length_newarr[0][loccal_max_index1][0]
-    length_max2 = length_newarr[1][loccal_max_index2][0]
+    length_min1 = length_newarr[0][loccal_min_index1][0]
+    length_min2 = length_newarr[1][loccal_min_index2][0]
     # print(length_max1,length_max2)
-    middle = (length_max1 + length_max2) / 2
-    # print(middle)
+    middle = (length_min1 + length_min2) / 2
+    print(middle)
     calib_length = length - middle
     # print(length)
     return calib_length
@@ -57,9 +57,9 @@ def plot_diagrams(calib_length, eps_x, eps_y, phiM):
 
 
 def main():
-    filename = "YLD_2d_Investigation/experiment_data/R_3.csv"
+    filename = "YLD_2d_Investigation/experiment_data/R_2.csv"
     length, x, y, eps_x, eps_y, phiM = read_csv_files(filename)
-    calib_length = calib_x(eps_x, length)
+    calib_length = calib_x(phiM, length)
     plot_diagrams(calib_length, eps_x, eps_y, phiM)
 
 
