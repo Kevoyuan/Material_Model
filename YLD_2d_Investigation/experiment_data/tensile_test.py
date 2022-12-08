@@ -51,7 +51,7 @@ def plot_diagrams(calib_length, eps_x, eps_y, phiM):
     plt.plot(calib_length, eps_y, "-", label="y_strain")
     plt.plot(calib_length, phiM, "-", label="eq_strain")
     plt.legend()
-
+    
     plt.grid(True, color="grey", linewidth="1.4", linestyle="-.")
     plt.show()
 
