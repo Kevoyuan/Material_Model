@@ -14,7 +14,7 @@ from generate_batch_files import gen_batch_post
 
 from yld2000.YLD2000_2d_realM_EN import export_yld_parameter
 from YLD_2d_Investigation.Draw_Yield_curve import export_yield_curve
-from yld2000.plot_mult_yld import get_normals, plot_yield
+from yld2000.plot_mult_yld import plot_yield
 
 from Extract_data_from_result import (
     extract_angle_node,
@@ -345,14 +345,14 @@ def plot_strain_distribution(path, sub_folders, strain_type):
 
         lablename = files
 
-        plt.plot(x_strain, y_strain, label=strain_type, zorder=1)
-        # plt.plot(x_strain, y_strain, label=lablename, zorder=1)
+        # plt.plot(x_strain, y_strain, label=strain_type, zorder=1)
+        plt.plot(x_strain, y_strain, label=lablename, zorder=1)
 
     plt.legend()
     plt.ylabel(f"{strain_type}")
     plt.xlabel("Section along middle line/[mm]")
     # plt.xticks(np.linspace(-8, 8, 9))
-    # plt.ylim(-0.35,0.35)
+    plt.ylim(-0.35,0.35)
     plt.grid(True, color="grey", linewidth="1.4", linestyle="-.")
 
     # plt.show()
@@ -519,13 +519,13 @@ def plot_yield_curve(path, sub_folders):
 
         print("\n", ex_value)
 
-        # export_yld_parameter(ex_value, path, selected_folders[i])
-        # export_yield_curve(path, selected_folders[i])
+        export_yld_parameter(ex_value, path, selected_folders[i])
+        export_yield_curve(path, selected_folders[i])
     plot_yield(path)
 
 
 def main():
-    foldername = "YLD_2d_Investigation/sig_b"
+    foldername = "YLD_2d_Investigation/r90"
     # foldername = "test/"
 
     path = f"./{foldername}"
@@ -534,11 +534,11 @@ def main():
     gen_batch_post(foldername, sub_folders)
     extract_datas(path, sub_folders)
 
-    plot_3_strains(path, sub_folders)
+    # plot_3_strains(path, sub_folders)
+    # plot_different_strains(path, sub_folders)
 
-    plot_strain(path)
-    plot_distance(path)
-    # plot_yield_curve(path, sub_folders)
+    # plot_strain(path)
+    plot_yield_curve(path, sub_folders)
 
 
 if __name__ == "__main__":
