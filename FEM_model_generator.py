@@ -16,8 +16,12 @@ from yld2000.YLD2000_2d_realM_EN import export_yld_parameter
 from YLD_2d_Investigation.Draw_Yield_curve import export_yield_curve
 from yld2000.plot_mult_yld import get_normals, plot_yield
 
-from Extract_data_from_result import extract_angle_node,extract_ThicknessReduction,extract_y_displacement
-from Modify_postfile import add_angle_command,add_cut_line,add_arm_line
+from Extract_data_from_result import (
+    extract_angle_node,
+    extract_ThicknessReduction,
+    extract_y_displacement,
+)
+from Modify_postfile import add_angle_command, add_cut_line, add_arm_line
 
 from intersect import intersection
 
@@ -42,9 +46,7 @@ def find_nearest(array, value):
     # find the nearest value in an array
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
-    return array[idx]
-
-
+    return array[idx], idx
 
 
 def find_strain(StrainPath, eq_StrainPath, strain_value):
@@ -53,7 +55,7 @@ def find_strain(StrainPath, eq_StrainPath, strain_value):
 
     df_var = pd.read_csv(StrainPath, header=1)
 
-    column_headers= list(df_var.columns.values)
+    column_headers = list(df_var.columns.values)
 
     x_var = df_var[column_headers[0]]
 
@@ -67,9 +69,8 @@ def find_strain(StrainPath, eq_StrainPath, strain_value):
 
     x_lim = x_lim - 0.8
 
-    y_strain = find_nearest(y_var, value=strain_value)
+    y_strain, strain_position_idx = find_nearest(y_var, value=strain_value)
 
-    strain_position_idx = df_var[y_var == y_strain].index.values[0]
     strain_position = x_var.iloc[strain_position_idx]
 
     df_strain = pd.read_csv(eq_StrainPath, header=1)
@@ -104,13 +105,14 @@ def remove_command_line(fem_model):
     print(f"unneccessary lines in {fem_model} removed\n")
 
 
-
-def intersection_x_y_strain(fem_model):
+def calculate_strains(fem_model):
     x_path = f"{fem_model}/x_strain.csv"
     y_path = f"{fem_model}/y_strain.csv"
+    eq_path = f"{fem_model}/StrainCurve.csv"
+
     dfx = pd.read_csv(x_path, header=1)
 
-    column_headers_x= list(dfx.columns.values)
+    column_headers_x = list(dfx.columns.values)
 
     dfx_distance = dfx[column_headers_x[0]]
 
@@ -120,54 +122,56 @@ def intersection_x_y_strain(fem_model):
     x1 = np.array(dfx_distance).reshape(-1, 1)
     y1 = np.array(dfx_strain).reshape(-1, 1)
 
-
     dfy = pd.read_csv(y_path, header=1)
 
-    column_headers_y= list(dfy.columns.values)
+    column_headers_y = list(dfy.columns.values)
 
     # dfy_distance = dfy[column_headers_y[0]]
 
     dfy_strain = dfy[column_headers_y[1]]
 
-
     x2 = x1
-
 
     y2 = np.array(dfy_strain).reshape(-1, 1)
 
-    x,y = intersection(x1,y1,x1,y2)
+    # find intersection of x and y strain
+    x, y = intersection(x1, y1, x1, y2)
 
+    dfeq = pd.read_csv(eq_path, header=1)
 
-    # plt.plot(x1, y1, c="r")
-    # plt.plot(x2, y2, c="g")
-    # plt.plot(x, y, "*k")
-    # plt.show()
-    # print(f"\nx = {x[1]}\ny = {y}")
+    column_headers_eq = list(dfeq.columns.values)
+
+    dfeq_distance = dfeq[column_headers_eq[0]]
+
+    dfeq_strain = dfeq[column_headers_eq[1]]
+    dfeq_distance = dfeq_distance - 0.5 * dfeq_distance.max()
+
+    print(f"\nx = {x}\ny = {y}")
 
     biaxial_distance = x[1]
 
-    return biaxial_distance
+    # locate the index of biaxial strain
+    bi_distance, bi_idx = find_nearest(y1, value=y[1])
+    print(f"idx: {bi_idx}")
 
+    # biaxial_strain
+    biaxial_strain = dfeq_strain[bi_idx]
 
+    # locate the index of plane strain
+    pl_distance, plane_idx = find_nearest(y2, value=0)
 
+    # plane_strain
+    plane_strain = dfeq_strain[plane_idx]
+    plane_distance = abs(dfeq_distance[plane_idx])
 
+    print(f"\n\nbixaial distance1 = {biaxial_distance}")
 
+    print(f"\n\nbixaial strain = {biaxial_strain}")
 
-def calc_strains(fem_model):
-    # # curve of Triaxiality
-    Tria_path = f"{fem_model}/TriaxialityCurve.csv"
+    print(f"\n\nplane distance = {plane_distance}")
 
-    # # Strain Curve
-    Strain_path = f"{fem_model}/StrainCurve.csv"
-
-    # find id: triaxial
-    triaxial_strain_type = 2 / 3
-
-    triaxial_strain, p = find_strain(Tria_path, Strain_path, triaxial_strain_type)
-
-
-
-    return triaxial_strain
+    print(f"\n\nplane strain = {plane_strain}")
+    return biaxial_distance, biaxial_strain, plane_distance, plane_strain
 
 
 def find_plane_strain(fem_model):
@@ -238,26 +242,31 @@ def extract_datas(path, sub_folders):
 
         print("\n\nfem_model: ", files)
 
-        cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
+        # cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
 
         add_state(fem_model, min_state)
         # add_state(fem_model, state)
 
-        add_cut_line(fem_model, cut_line)
-        add_angle_command(fem_model, angle_command)
+        # add_cut_line(fem_model, cut_line)
+        # add_angle_command(fem_model, angle_command)
         end_angle = calc_end_angle(fem_model, max_index)
         list_end_angle.append(end_angle)
 
-        biaxial_distance = intersection_x_y_strain(fem_model)
+        # calculate bixial strain by using x_strain = y_strain
+        (
+            biaxial_distance,
+            biaxial_strain,
+            plane_distance,
+            plane_strain,
+        ) = calculate_strains(fem_model)
 
         # add_arm_line(fem_model, end_angle, Tri_point)
 
-        Biaxial_strain = calc_strains(fem_model)
-        plane_strain, plane_distance = find_plane_strain(fem_model)
+        # plane_strain, plane_distance = find_plane_strain(fem_model)
         list_plane_distance.append(plane_distance)
         list_biaxial_distance.append(biaxial_distance)
 
-        list_Biaxial_strain.append(Biaxial_strain)
+        list_Biaxial_strain.append(biaxial_strain)
         list_plane_strain.append(plane_strain)
 
     yy = np.std(list_maxYDisplacement)
@@ -280,7 +289,6 @@ def extract_datas(path, sub_folders):
             "Plane_Strain": list_plane_strain,
             "Plane_Distance": list_plane_distance,
             "Biaxial_Distance": list_biaxial_distance,
-
             # "Uniaxial_Strain": list_uniaxial_strain,
             "Biaxial_Strain": list_Biaxial_strain,
         }
@@ -318,6 +326,8 @@ def plot_strain_distribution(path, sub_folders, strain_type):
         strain_distribution = "x_strain.csv"
     elif strain_type == "y_strain":
         strain_distribution = "y_strain.csv"
+    elif strain_type == "xy_strain":
+        strain_distribution = "xy_strain.csv"
 
     for files in sub_folders:
 
@@ -335,16 +345,15 @@ def plot_strain_distribution(path, sub_folders, strain_type):
 
         lablename = files
 
-        # plt.plot(x_strain, y_strain, label=strain_type, zorder=1)
-        plt.plot(x_strain, y_strain, label=lablename, zorder=1)
-        
+        plt.plot(x_strain, y_strain, label=strain_type, zorder=1)
+        # plt.plot(x_strain, y_strain, label=lablename, zorder=1)
+
     plt.legend()
     plt.ylabel(f"{strain_type}")
     plt.xlabel("Section along middle line/[mm]")
     # plt.xticks(np.linspace(-8, 8, 9))
-    plt.ylim(-0.35,0.35)
+    # plt.ylim(-0.35,0.35)
     plt.grid(True, color="grey", linewidth="1.4", linestyle="-.")
-    
 
     # plt.show()
 
@@ -363,13 +372,12 @@ def plot_distance(file_path):
         inplace=True,
         ignore_index=True,
     )
-    
 
     x = df_var["Param"]
     y1 = df_var["Plane_Distance"]
     y2 = df_var["Biaxial_Distance"]
-    plt.plot(x, y1,"o-",label= "Plane_strain_position")
-    plt.plot(x,y2, "o-",label = "Biaxial_strain_position")
+    plt.plot(x, y1, "o-", label="Plane_strain_position")
+    plt.plot(x, y2, "o-", label="Biaxial_strain_position")
 
     plt.xticks(
         np.linspace(df_var["Param"].min(), df_var["Param"].max(), len(df_var["Param"]))
@@ -377,7 +385,7 @@ def plot_distance(file_path):
     plt.legend()
     plt.xlabel(Labelname)
     plt.ylabel("Position to Center/[mm]")
-    plt.ylim(2.5,6)
+    plt.ylim(2.5, 6)
     plt.savefig(f"{file_path}/Position_to_center.png", format="png")
 
     plt.show()
@@ -433,31 +441,57 @@ def plot_strain(file_path):
     plt.show()
 
 
-def plot_3_strains(path, sub_folders):
+def plot_different_strains(path, sub_folders):
     title = path.split("/")[2]
     # title= "notch"
     plt.title(f"{title}")
 
-    strain_type_list = [ "x_strain", "y_strain","eq_strain"]
+    strain_type_list = ["x_strain", "y_strain", "eq_strain", "xy_strain"]
 
-    selected_folders = [
-                        sub_folders[0], 
-                        sub_folders[2], 
-                        sub_folders[-1]
-                        ]
+    selected_folders = [sub_folders[0], sub_folders[2], sub_folders[-1]]
     print(selected_folders)
 
-    
     for strain_type in strain_type_list:
 
         plot_strain_distribution(path, selected_folders, strain_type)
-        plt.savefig(f"{path}/{strain_type}_strain_distribution.png", transparent=True,dpi=600)
+        plt.savefig(
+            f"{path}/{strain_type}_strain_distribution.png", transparent=True, dpi=600
+        )
         # plt.xlim(-6,-5)
         # plt.ylim(0,0.1)
         # plt.xticks(np.linspace(-6, -5, 3))
 
         # plt.savefig(f"{path}/{strain_type}_zoomin_strain_distribution.png", transparent=True,dpi=600)
         plt.show()
+
+
+def plot_3_strains(path, sub_folders):
+    title = path.split("/")[2]
+    # title= "notch"
+    plt.title(f"{title}")
+
+    strain_type_list = [
+        "x_strain",
+        "y_strain",
+        "eq_strain",
+    ]
+
+    selected_folders = [
+        sub_folders[1],
+    ]
+    print(selected_folders)
+
+    for strain_type in strain_type_list:
+
+        plot_strain_distribution(path, selected_folders, strain_type)
+        # plt.savefig(f"{path}/{strain_type}_strain_distribution.png", transparent=True,dpi=600)
+        # plt.xlim(-6,-5)
+        # plt.ylim(0,0.1)
+        # plt.xticks(np.linspace(-6, -5, 3))
+        plt.ylim(-0.1, 0.25)
+
+    plt.savefig(f"{path}/3_strain_distribution.png", transparent=True, dpi=600)
+    plt.show()
 
 
 def plot_yield_curve(path, sub_folders):
@@ -491,7 +525,7 @@ def plot_yield_curve(path, sub_folders):
 
 
 def main():
-    foldername = "YLD_2d_Investigation/r90"
+    foldername = "YLD_2d_Investigation/sig_b"
     # foldername = "test/"
 
     path = f"./{foldername}"
@@ -502,9 +536,9 @@ def main():
 
     plot_3_strains(path, sub_folders)
 
-    plot_strain(path) 
+    plot_strain(path)
     plot_distance(path)
-    plot_yield_curve(path, sub_folders)
+    # plot_yield_curve(path, sub_folders)
 
 
 if __name__ == "__main__":
