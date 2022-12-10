@@ -72,5 +72,6 @@ for filename in sub_folders:
     plt.xlabel(r'$\sigma_x/\sigma_{eq}$')
 
     plt.ylabel(r'$\sigma_y/\sigma_{eq}$')
-plt.savefig(path+f"/sigma.svg")
+plt.axis("equal")     
+# plt.savefig(path+f"/sigma.svg")
 plt.show()
