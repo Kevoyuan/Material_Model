@@ -74,6 +74,14 @@ def add_cut_line(fem_model, cut_line):
                 idx5 = a.index(item, idx4 + 2)
                 print("index5 =  ", idx5)
                 a.insert(idx5, cut_line)
+                
+                idx6 = a.index(item, idx5 + 2)
+                print("index6 =  ", idx6)
+                a.insert(idx6, cut_line)
+                
+                idx7 = a.index(item, idx6 + 2)
+                print("index7 =  ", idx7)
+                a.insert(idx7, cut_line)
 
                 # idx6 = a.index(item, idx5 + 3)
                 # print("index6 =  ", idx6)
@@ -153,15 +161,21 @@ def add_arm_line(fem_model, end_angle, Tri_point):
                 idx5 = a.index(item, idx4 + 2)
 
                 idx6 = a.index(item, idx5 + 2)
+                
+                idx7 = a.index(item, idx6 + 2)
+                
+                idx8 = a.index(item, idx7 + 2)
+                
+                
                 # line = a.readlines()
-                print("arm lline: ", a[idx6 - 1])
-                if arm_line == a[idx6 - 1]:
+                print("arm lline: ", a[idx8 - 1])
+                if arm_line == a[idx8 - 1]:
 
                     print("NODE for arm line inserted already")
                     break
                 else:
-                    print("index6 =  ", idx6)
-                    a.insert(idx6, arm_line)
+                    print("index8 =  ", idx8)
+                    a.insert(idx8, arm_line)
                     print("arm_line inserted!")
                     break
 
