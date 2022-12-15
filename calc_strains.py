@@ -1,7 +1,7 @@
-
 import pandas as pd
 import numpy as np
 from intersect import intersection
+from find_nearest_value import find_nearest
 
 
 def calculate_strains(fem_model):
@@ -71,4 +71,3 @@ def calculate_strains(fem_model):
 
     print(f"\n\nplane strain = {plane_strain}")
     return biaxial_distance, biaxial_strain, plane_distance, plane_strain
-

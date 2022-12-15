@@ -28,16 +28,6 @@ from read_subfolders import read_subfolders
 from calc_strains import calculate_strains
 
 
-
-
-def find_nearest(array, value):
-    # find the nearest value in an array
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return array[idx], idx
-
-
-
 def remove_command_line(fem_model):
     # remove unneccessary lines in notch.k
 
@@ -51,7 +41,6 @@ def remove_command_line(fem_model):
         f.writelines(data[pos:])
 
     print(f"unneccessary lines in {fem_model} removed\n")
-
 
 
 def extract_datas(path, sub_folders):
@@ -96,10 +85,10 @@ def extract_datas(path, sub_folders):
     print("\n\nmin_state: ", min_state)
 
     for files in sub_folders:
-        list_state.append(min_state)
+        # list_state.append(min_state)
 
-        # max_index = state -1
-        # list_state.append(state)
+        max_index = state - 1
+        list_state.append(state)
 
         fem_model = path + "/" + str(files)
         maxYDisplacement = extract_y_displacement(fem_model, max_index)
@@ -107,13 +96,13 @@ def extract_datas(path, sub_folders):
 
         print("\n\nfem_model: ", files)
 
-        # cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
+        cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
 
         add_state(fem_model, min_state)
         # add_state(fem_model, state)
 
-        # add_cut_line(fem_model, cut_line)
-        # add_angle_command(fem_model, angle_command)
+        add_cut_line(fem_model, cut_line)
+        add_angle_command(fem_model, angle_command)
         end_angle = calc_end_angle(fem_model, max_index)
         list_end_angle.append(end_angle)
 
@@ -205,15 +194,14 @@ def plot_strain_distribution(path, sub_folders, strain_type):
         lablename = files
 
         # plt.plot(x_strain, y_strain, label=strain_type, zorder=1)
-        # plt.plot(x_strain, y_strain, label=lablename, zorder=1)
-        plt.plot(x_strain, y_strain, label="simulation", zorder=1)
-
+        plt.plot(x_strain, y_strain, label=lablename, zorder=1)
+        # plt.plot(x_strain, y_strain, label="simulation", zorder=1)
 
     plt.legend()
     plt.ylabel(f"{strain_type}")
     plt.xlabel("Section along middle line/[mm]")
     # plt.xticks(np.linspace(-8, 8, 9))
-    plt.ylim(-0.35,0.35)
+    plt.ylim(-0.35, 0.35)
     plt.grid(True, color="grey", linewidth="1.4", linestyle="-.")
 
     # plt.show()
@@ -307,9 +295,15 @@ def plot_different_strains(path, sub_folders):
     # title= "notch"
     plt.title(f"{title}")
 
-    strain_type_list = ["x_strain", "y_strain", "eq_strain", "xy_strain"]
-
-    selected_folders = [sub_folders[0], sub_folders[2], sub_folders[-1]]
+    strain_type_list = ["x_strain", "y_strain", "eq_strain", 
+                        # "xy_strain"
+                        ]
+    # choose 3 folders
+    # selected_folders = [sub_folders[0], sub_folders[2], sub_folders[-1]]
+    
+    # choose all folders
+    selected_folders = sub_folders
+    
     print(selected_folders)
 
     for strain_type in strain_type_list:
@@ -318,11 +312,19 @@ def plot_different_strains(path, sub_folders):
         plt.savefig(
             f"{path}/{strain_type}_strain_distribution.png", transparent=True, dpi=600
         )
-        plt.xlim(-6,-5)
-        plt.ylim(0.05,0.09)
-        plt.xticks(np.linspace(-6, -5, 3))
+        
+        
+        # for zoomin
+        # plt.xlim(-6, -5)
+        # plt.ylim(0.05, 0.09)
+        # plt.xticks(np.linspace(-6, -5, 3))
 
-        plt.savefig(f"{path}/{strain_type}_zoomin_strain_distribution.png", transparent=True,dpi=600)
+        # plt.savefig(
+        #     f"{path}/{strain_type}_zoomin_strain_distribution.png",
+        #     transparent=True,
+        #     dpi=600,
+        # )
+        
         plt.show()
 
 
@@ -337,7 +339,8 @@ def plot_3_strains(path, sub_folders):
         "eq_strain",
     ]
 
-    selected_folders = [ sub_folders[0],
+    selected_folders = [
+        sub_folders[0],
         # sub_folders[1],
     ]
     print(selected_folders)
@@ -352,7 +355,7 @@ def plot_3_strains(path, sub_folders):
         plt.ylim(-0.1, 0.25)
 
     plt.savefig(f"{path}/3_strain_distribution.png", transparent=True, dpi=600)
-    # plt.show()
+    plt.show()
 
 
 def plot_yield_curve(path, sub_folders):
@@ -386,19 +389,20 @@ def plot_yield_curve(path, sub_folders):
 
 
 def main():
-    foldername = "YLD_2d_Investigation/r00"
+    # foldername = "YLD_2d_Investigation/r00"
     # foldername = "test/"
+    foldername = "test_rough_mesh/rough_model"
 
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    gen_batch_post(foldername, sub_folders)
-    extract_datas(path, sub_folders)
+    # gen_batch_post(foldername, sub_folders)
+    # extract_datas(path, sub_folders)
 
     # plot_3_strains(path, sub_folders)
-    # plot_different_strains(path, sub_folders)
+    plot_different_strains(path, sub_folders)
 
-    plot_strain(path)
+    # plot_strain(path)
     # plot_yield_curve(path, sub_folders)
 
 
