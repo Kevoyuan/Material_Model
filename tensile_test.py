@@ -160,7 +160,7 @@ def plot_diagrams(calib_length, eps_x, eps_y, phiM, label):
     # plt.show()
 
 
-def fit_curve(y_sum, length_max, length_min, calib_length, curve, label):
+def fit_curve(y_sum, calib_length, curve, label):
 
     # use calib_length to fit the model again
 
@@ -170,38 +170,38 @@ def fit_curve(y_sum, length_max, length_min, calib_length, curve, label):
     # print(y_fit)
     y_sum.append(y_fit)
 
-    length_max.append(calib_length.max())
-    length_min.append(calib_length.min())
     # print(length_min, length_max)
     # print("\ny_sum: \n",y_sum)
 
-    return y_sum, length_max, length_min
+    return y_sum
 
 
-def avg_y_sum(y_sum, length_max, length_min, label):
+def avg_y_sum(y_sum, avg_calib_length, label):
     y_average = (y_sum[0] + y_sum[1] + y_sum[2]) / 3
     # print("\ny_avg: ", y_average)
-    x_new = np.linspace(min(length_min), max(length_max), 1000)
-    print(min(length_min), max(length_max))
-    x_new = x_new.reshape((1, -1))
+    # x_new = np.linspace(min(length_min), max(length_max), 1000)
+    # print(min(length_min), max(length_max))
+    avg_calib_length = avg_calib_length.reshape((1, -1))
     plt.xlabel("section along middle line in mm")
     plt.ylabel("eq. strain")
     plt.grid(True, color="grey", linewidth="1.4", linestyle="-.")
 
-    # plt.ylim(-0.1, 0.2)
+    plt.ylim(-0.1, 0.2)
     plt.xticks(np.linspace(-8, 8, 9))
 
-    plt.scatter(x_new[:, :], y_average[:, :], s=1.0, label=label)
+    plt.scatter(avg_calib_length[:, :], y_average[:, :], s=1.0, label=label)
+    import pandas as pd
 
     plt.legend()
 
 
 def main():
 
-    path = "./YLD_2d_Investigation/experiment_data/test2"
+    path = "./YLD_2d_Investigation/experiment_data/test2/experiments"
 
     group = "R"
-    csv_files = glob.glob(f"{path}/{group}*.csv")
+    displacement = "3p5"  # for different displacement: 2, 2p5, 3, 3p5
+    csv_files = glob.glob(f"{path}/{group}*_{displacement}mm.csv")
 
     csv_files = sorted(csv_files)
     y_sum_eps_x = []
@@ -217,27 +217,26 @@ def main():
             filename = filename.replace("\\", "/")
         print(filename)
 
-        label = filename.split("/")[4].split(".")[0]
+        label = filename.split("/")[5].split(".")[0]
         # filename = "YLD_2d_Investigation/experiment_data/7p1_3.csv"
         length, x, y, eps_x, eps_y, phiM = read_csv_files(filename)
         calib_length = calibrate_length(length, phiM, group)
         # print("\n length: ", calib_length)
-        plot_diagrams(calib_length, eps_x, eps_y, phiM, label)
+        # plot_diagrams(calib_length, eps_x, eps_y, phiM, label)
 
-        y_sum_eps_x, length_max_eps_x, length_min_eps_x = fit_curve(
-            y_sum_eps_x, length_max, length_min, calib_length, eps_x, "eps_x"
-        )
-        y_sum_eps_y, length_max_eps_y, length_min_eps_y = fit_curve(
-            y_sum_eps_y, length_max, length_min, calib_length, eps_y, "eps_y"
-        )
-        y_sum_phiM, length_max_phiM, length_min_phiM = fit_curve(
-            y_sum_phiM, length_max, length_min, calib_length, phiM, "phiM"
-        )
+        y_sum_eps_x = fit_curve(y_sum_eps_x, calib_length, eps_x, "eps_x")
+        y_sum_eps_y = fit_curve(y_sum_eps_y, calib_length, eps_y, "eps_y")
+        y_sum_phiM = fit_curve(y_sum_phiM, calib_length, phiM, "phiM")
 
-    # avg_y_sum(y_sum_eps_x,length_max_eps_x,length_min_eps_x,"eps_x")
-    # avg_y_sum(y_sum_eps_y,length_max_eps_y,length_min_eps_y, "eps_y")
-    avg_y_sum(y_sum_phiM, length_max_phiM, length_min_phiM, "phiM")
-    # plt.savefig(f"{path}/strain_{group}.png")
+        length_max.append(calib_length.max())
+        length_min.append(calib_length.min())
+
+    avg_calib_length = np.linspace(np.mean(length_min), np.mean(length_max), 1000)
+    avg_y_sum(y_sum_eps_x, avg_calib_length, "avg_eps_x")
+    avg_y_sum(y_sum_eps_y, avg_calib_length, "avg_eps_y")
+    avg_y_sum(y_sum_phiM, avg_calib_length, "avg_phiM")
+    plt.title(f"Strain Distribution in {displacement}mm")
+    plt.savefig(f"{path}/Strain_Distribution_{group}_{displacement}mm.png")
 
     plt.show()
 
