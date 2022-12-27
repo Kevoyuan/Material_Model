@@ -41,7 +41,9 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
         key_list = []
         key_No = cre_key_No()
         for i in key_No:
-            for j in ["_0", "_45", "_90"]:
+            # for j in ["_0", "_45", "_90"]:
+            for j in ["_0", "_90"]:
+
                 a = ["keyword" + i + j + ".k", os.getcwd() + "/keyword/keyword" + i + "/keyword" + i + j]
                 key_list.append(a)
 
@@ -108,7 +110,9 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
             inp_path_list.append(a)
             dataset_inp_path_list.append(b)
 
-            for j in ["_0", "_45", "_90"]:
+            # for j in ["_0", "_45", "_90"]:
+            for j in ["_0", "_90"]:
+
                 a = os.getcwd() + "/inp/inp" + i
                 b = os.getcwd() + "/dataset_inp/dataset_inp" + i
                 c = a + '/inp_1_' + i + j + '.csv'
@@ -199,7 +203,9 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
             inp_path_list.append(a)
             dataset_inp_path_list.append(b)
 
-            for j in ["_0", "_45", "_90"]:
+            # for j in ["_0", "_45", "_90"]:
+            for j in ["_0", "_90"]:
+
                 a = os.getcwd() + "/inp/inp" + i
                 b = os.getcwd() + "/dataset_inp/dataset_inp" + i
                 for k in data_type_list[1:]: # data_type_listの最初の番号1はFS用なので外し，2番目から
@@ -270,11 +276,15 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
 
 
     # create dataset_inp_path.csv
-    csv_path = [['x1:FS_0deg', 'x2:FS_45deg', 'x3:FS_90deg', 'x4__0:X2D_0deg', 'x5__0:X2D_45deg', 'x6__0:X2D_90deg', 
-                 'x4__1:Y2D_0deg', 'x5__1:Y2D_45deg', 'x6__1:Y2D_90deg']]
+    # csv_path = [['x1:FS_0deg', 'x2:FS_45deg', 'x3:FS_90deg', 'x4__0:X2D_0deg', 'x5__0:X2D_45deg', 'x6__0:X2D_90deg', 
+    #              'x4__1:Y2D_0deg', 'x5__1:Y2D_45deg', 'x6__1:Y2D_90deg']]
+    csv_path = [['x1:FS_0deg', 'x3:FS_90deg', 'x4__0:X2D_0deg',  'x6__0:X2D_90deg', 
+                 'x4__1:Y2D_0deg', 'x6__1:Y2D_90deg']]
 
 
-    RD_list=['_0.csv','_45.csv','_90.csv']
+    # RD_list=['_0.csv','_45.csv','_90.csv']
+    RD_list=['_0.csv','_90.csv']
+
 
     for i in cre_key_No():
         ad_list=[]
@@ -310,7 +320,9 @@ def P5_2():
     data_type_list=[1,57,58]
     # inputはsymmetyの操作をしていない，outputは標準偏差を先に求めるためsymmetyの操作ずみ
     dataset_input=read_csv(r"./dataset_inp/dataset_inp_path.csv",)  
-    dataset_output=read_csv(r"D:\LS-DYNA_data\nnc\test005\execution_test\dataset_outp\dataset_outp.csv",)
+    # dataset_output=read_csv(r"D:\LS-DYNA_data\nnc\test005\execution_test\dataset_outp\dataset_outp.csv",)
+    dataset_output=read_csv(r"./dataset_outp/dataset_outp.csv",)
+
 
     dataset=[]  #datasetとして，input,outputを結合
     for i in range(len(dataset_input)):
@@ -322,7 +334,8 @@ def P5_2():
 
     for i in range(len(symmetry_dataset_input)):
         for j in range(len(data_type_list)):
-            symmetry_dataset_input[i][3*j],symmetry_dataset_input[i][3*j+2]=symmetry_dataset_input[i][3*j+2],symmetry_dataset_input[i][3*j]
+            # symmetry_dataset_input[i][3*j],symmetry_dataset_input[i][3*j+2]=symmetry_dataset_input[i][3*j+2],symmetry_dataset_input[i][3*j]
+            symmetry_dataset_input[i][2*j],symmetry_dataset_input[i][2*j+1]=symmetry_dataset_input[i][2*j+1],symmetry_dataset_input[i][2*j]
             
     # print(symmetry_dataset_input)
 
