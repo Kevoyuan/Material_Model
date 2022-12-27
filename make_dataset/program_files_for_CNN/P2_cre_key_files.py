@@ -57,7 +57,7 @@ def write_keyword(parameter_list_for_keywrod, alpha_list_for_keyword, main_k_nam
                 f.write('$      mid        ro         e        pr       fit      beta      iter\n')
                 f.write('         1 7.830e-09 206000.00 0.3000000 0.0000000 0.0000000 0.0000000\n')
                 f.write('$        k        e0         n         c         p      hard         a\n')
-                f.write('                                                   -2.000000         ' + i[9] + '\n')
+                f.write('                                                   -2.000000     ' + str(f"{float(i[9]):.3f}")+ '\n')
                 f.write('$   alpha1    alpha2    alpha3    alpha4    alpha5    alpha6    alpha7    alpha8\n')
                 f.write(str(alpha_list_for_keyword[n]) + '\n')
                 f.write('$     aopt\n')
@@ -88,7 +88,8 @@ def P2():
     parameter_csv_name = 'parameter_success.csv'                        #パラメータcsvファイル名
     a, b = read_parameter(parameter_csv_name)                           #読み取る試験条件やYLD2000-2dのパラメータのcsvファイル名を入力
 
-    RD_list = [0, 45, 90]                                               #圧延方向[0, 45, 90 deg]
+    # RD_list = [0, 45, 90]                                               #圧延方向[0, 45, 90 deg]
+    RD_list = [0, 90]                                               #圧延方向[0, 45, 90 deg]
     
     write_keyword(a, b,'../../../../optional_files/main_explicit.k', RD_list)                              
 
