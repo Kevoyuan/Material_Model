@@ -7,6 +7,8 @@ from program_files_for_CNN import P5_cre_inp_10 as P5
 import os
 import numpy as np
 
+from program_files_for_CNN import split_data as split
+
 if __name__ == '__main__':
     sig45_range = [0.9, 1.2]
     sig90_range = [0.9, 1.2]
@@ -19,13 +21,13 @@ if __name__ == '__main__':
 
     # 実行フォルダの作成と変更 training_dataは'./execution'，evaluation_dataは'./execution2'
     # execution_Path='./execution'
-    execution_Path='./execution_test'
+    execution_Path='./execution_test_1024'
     os.makedirs(execution_Path,exist_ok=True)
     os.chdir(execution_Path)
 
     # creation of  random sigma, r-value and M. and identification of alpha1-8 of yld2000-2d
     #(number of parameter sets, range of parameters:sigma,r,M)
-    # P1.P1(16, sig45_range, sig90_range, sigb_range, r00_range, r45_range, r90_range, rb_range, M_range)
+    # P1.P1(1024, sig45_range, sig90_range, sigb_range, r00_range, r45_range, r90_range, rb_range, M_range)
     # print('-----Finish P1------')
 
     # creation of ls-dyna keyword file
@@ -38,23 +40,33 @@ if __name__ == '__main__':
 
     # Run ls-dyna pararelly and run ls-prepost
     #使用するcpu数, LS-DYNAの解析ソルバーパス，LS-Prepostのパス，.cfileのパス
-    cpus = 12
-    solver_path = "D:\LSDYNA\program\ls-dyna_smp_d_R11_1_0_winx64_ifort160.exe" 
-    prepost_path='D:\LSDYNA\program\lsprepost.exe'
-    cfile_path='..\..\..\..\optional_files\lspostcmd_multi-section_cut_35-11.cfile'
+    cpus = 16
+    # solver_path = "D:\LSDYNA\program\ls-dyna_smp_d_R11_1_0_winx64_ifort160.exe" 
+    # solver_path = "C:\LSDYNA\LSDYNA\program\ls-dyna_smp_d_R12_0_0_winx64_ifort170.exe"
+    solver_path = "D:\LS-PrePost_4.8\ls-dyna_smp_d_R12_0_0_winx64_ifort170\ls-dyna_smp_d_R12_0_0_winx64_ifort170.exe"
+    # prepost_path = 'D:\LSDYNA\program\lsprepost.exe'
+    # prepost_path = "C:\LSDYNA\LSDYNA\program\lsprepost4.8_x64.exe"
+    prepost_path = "D:\LS-PrePost_4.8\lsprepost4.8_x64.exe"
+    # cfile_path='..\..\..\..\optional_files\lspostcmd_multi-section_cut_35-11.cfile'
+    cfile_path='..\..\..\..\optional_files\lspostcmd_multi-section_cut.cfile'
 
-    # P4.P4(cpus, solver_path)
 
+
+    P4.P4(cpus, solver_path)
     # P4.P4_2(cpus, prepost_path, cfile_path)
     # print('-----Finish P4------')
 
     # reference position of x
     # ref_x = np.arange(-8.5,9,0.5)
-    ref_y_disp_node = "      330"
-    ref_y_disp_node2 = "      326"
+    # ref_y_disp_node = "      330"
+    # ref_y_disp_node2 = "      326"
+    ref_y_disp_node = "      560" 
+    ref_y_disp_node2 = "      559"
     model_scale = 1 # full model:1, quater model:2
 
     # P5.P5(ref_y_disp_node, ref_y_disp_node2, model_scale)
-    P5.P5_2()
+    # P5.P5_2()
     # print('-----Finish P5------')   
 
+    # split.split_data(execution_Path)
+    # print('-----Finish Split Data------')   
