@@ -85,4 +85,4 @@ test.py
 *.ini
 *.nnp
 *.npy
-*/node_des
+*node_des
