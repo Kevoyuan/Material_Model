@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from FEM_model_generator import read_subfolders
+from FEM_model_modify import read_subfolders
 
 
 import fileinput
