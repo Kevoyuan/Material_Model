@@ -68,8 +68,8 @@ def main():
 
     # Set the displacement and curve type for the plots
 
-    displacement = "2"  # for different displacement: 2, 2p5, 3, 3p5
-    curvetype = "phiM"  # "eps_x", "eps_y", "phiM"
+    displacement = "3p5"  # for different displacement: 2, 2p5, 3, 3p5
+    curvetype = "eps_y"  # "eps_x", "eps_y", "phiM"
 
     # Find all the CSV files in the specified directory that match the specified displacement
     csv_files = glob.glob(f"{path}/avg_data_*_{displacement}mm.csv")

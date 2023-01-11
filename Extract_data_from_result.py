@@ -39,6 +39,24 @@ def extract_ThicknessReduction(fem_model):
     # )
 
 
+def set_state_from_y_dis(fem_model):
+    source = f"{fem_model}/Y-displacement.csv"
+    df_Y = pd.read_csv(source, header=1)
+    column_headers = list(df_Y.columns.values)
+    print(column_headers)
+    
+
+    time_displacement = df_Y[column_headers[0]]
+    df_y_displacement = df_Y[column_headers[3]]
+
+    # convert string back to numeric
+    df_y_displacement = df_y_displacement.apply(pd.to_numeric)
+    df_y_displacement = df_y_displacement[df_y_displacement < 3]
+    max_index = df_y_displacement.idxmax()
+    state = max_index + 1
+    return state
+
+
 def extract_y_displacement(fem_model, max_index):
     source = f"{fem_model}/%ThicknessReduction.csv"
 

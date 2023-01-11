@@ -19,6 +19,7 @@ from yld2000.plot_mult_yld import plot_yield
 from Extract_data_from_result import (
     extract_angle_node,
     extract_ThicknessReduction,
+    set_state_from_y_dis,
     extract_y_displacement,
 )
 from Modify_postfile import add_angle_command, add_cut_line, add_arm_line
@@ -75,17 +76,20 @@ def extract_datas(path, sub_folders):
         # remove_command_line(fem_model)
 
         state, df = extract_ThicknessReduction(fem_model)
-
+        # state = set_state_from_y_dis(fem_model)
+        
+        state = 22
+        
         state_broken.append(state)
-        print("\nbroken state: ", state)
+        print("\nstate: ", state)
 
-        if min_state is None or state < min_state:
-            min_state = state
-    max_index = min_state - 1
-    print("\n\nmin_state: ", min_state)
+    #     if min_state is None or state < min_state:
+    #         min_state = state
+    # max_index = min_state - 1
+    # print("\n\nmin_state: ", min_state)
 
-    for files in sub_folders:
-        # list_state.append(min_state)
+    # for files in sub_folders:
+    #     list_state.append(min_state)
 
         max_index = state - 1
         list_state.append(state)
@@ -98,8 +102,8 @@ def extract_datas(path, sub_folders):
 
         cut_line, angle_command, Tri_point = extract_angle_node(fem_model)
 
-        add_state(fem_model, min_state)
-        # add_state(fem_model, state)
+        # add_state(fem_model, min_state)
+        add_state(fem_model, state)
 
         add_cut_line(fem_model, cut_line)
         add_angle_command(fem_model, angle_command)
@@ -201,7 +205,7 @@ def plot_strain_distribution(path, sub_folders, strain_type):
     plt.ylabel(f"{strain_type}")
     plt.xlabel("Section along middle line/[mm]")
     # plt.xticks(np.linspace(-8, 8, 9))
-    plt.ylim(-0.35, 0.35)
+    # plt.ylim(-0.35, 0.35)
     plt.grid(True, color="grey", linewidth="1.4", linestyle="-.")
 
     # plt.show()
@@ -325,7 +329,7 @@ def plot_different_strains(path, sub_folders):
         #     dpi=600,
         # )
         
-        plt.show()
+    plt.show()
 
 
 def plot_3_strains(path, sub_folders):
@@ -334,8 +338,8 @@ def plot_3_strains(path, sub_folders):
     plt.title(f"{title}")
 
     strain_type_list = [
-        # "x_strain",
-        # "y_strain",
+        "x_strain",
+        "y_strain",
         "eq_strain",
     ]
 
@@ -352,7 +356,7 @@ def plot_3_strains(path, sub_folders):
         # plt.xlim(-6,-5)
         # plt.ylim(0,0.1)
         # plt.xticks(np.linspace(-6, -5, 3))
-        plt.ylim(-0.1, 0.25)
+        plt.ylim(-0.1, 0.2)
 
     plt.savefig(f"{path}/3_strain_distribution.png", transparent=True, dpi=600)
     plt.show()
@@ -396,8 +400,8 @@ def main():
     path = f"./{foldername}"
 
     sub_folders = read_subfolders(path)
-    # gen_batch_post(foldername, sub_folders)
-    # extract_datas(path, sub_folders)
+    gen_batch_post(foldername, sub_folders)
+    extract_datas(path, sub_folders)
 
     # plot_3_strains(path, sub_folders)
     plot_different_strains(path, sub_folders)

@@ -51,7 +51,7 @@ def cre_key_list():
 #実行部
 def dyna_run(key_list) :
     #dyna_path = "D:\LSDYNA\program\ls-dyna_smp_s_R10_2_0_winx64_ifort160.exe" 
-    NCPU="8"
+    NCPU="4"
     os.chdir(key_list[1])
     print(key_list[0],"を解析します")
     subprocess.run(key_list[2] + " I=" + key_list[0] +" NCPU=" + NCPU,shell = True)
