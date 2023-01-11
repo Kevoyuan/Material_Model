@@ -5,7 +5,7 @@ def split_data(path):
 
     print(f"path: {path}")
     # Load the CSV file into a pandas DataFrame, keeping the headers
-    df = pd.read_csv(f"{path}/dataset.csv", header=0)
+    df = pd.read_csv(f"{path}//dataset.csv", header=0)
 
     # Shuffle the rows
     df = df.sample(frac=1)
@@ -19,5 +19,5 @@ def split_data(path):
     training_set.to_csv(f"{path}/training_set.csv", index=False, header=True)
     validation_set.to_csv(f"{path}/validation_set.csv", index=False, header=True)
 
-# if __name__ == '__main__':
-#     split_data('./execution_test2')
+if __name__ == '__main__':
+    split_data()
