@@ -86,3 +86,4 @@ test.py
 *.nnp
 *.npy
 *node_des
+fit_tri.ipynb
