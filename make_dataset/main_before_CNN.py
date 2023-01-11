@@ -2,6 +2,8 @@ from program_files_for_CNN import P1_cre_para_csv_3 as P1
 from program_files_for_CNN import P2_cre_key_files as P2
 from program_files_for_CNN import P3_cre_outp_standardization2 as P3
 from program_files_for_CNN import P4_dyna_lsprepost_run as P4
+from program_files_for_CNN import P4_other 
+
 from program_files_for_CNN import P5_cre_inp_10 as P5
 
 import os
@@ -21,7 +23,7 @@ if __name__ == '__main__':
 
     # 実行フォルダの作成と変更 training_dataは'./execution'，evaluation_dataは'./execution2'
     # execution_Path='./execution'
-    execution_Path='./execution_test_1024'
+    execution_Path='./roughmodel_1024'
     os.makedirs(execution_Path,exist_ok=True)
     os.chdir(execution_Path)
 
@@ -40,19 +42,20 @@ if __name__ == '__main__':
 
     # Run ls-dyna pararelly and run ls-prepost
     #使用するcpu数, LS-DYNAの解析ソルバーパス，LS-Prepostのパス，.cfileのパス
-    cpus = 16
+    cpus = 20
     # solver_path = "D:\LSDYNA\program\ls-dyna_smp_d_R11_1_0_winx64_ifort160.exe" 
     # solver_path = "C:\LSDYNA\LSDYNA\program\ls-dyna_smp_d_R12_0_0_winx64_ifort170.exe"
-    solver_path = "D:\LS-PrePost_4.8\ls-dyna_smp_d_R12_0_0_winx64_ifort170\ls-dyna_smp_d_R12_0_0_winx64_ifort170.exe"
+    solver_path = "C:\LSDYNA\LS-PrePost\ls-dyna_smp_d_R12_0_0_winx64_ifort170\ls-dyna_smp_d_R12_0_0_winx64_ifort170.exe"
     # prepost_path = 'D:\LSDYNA\program\lsprepost.exe'
     # prepost_path = "C:\LSDYNA\LSDYNA\program\lsprepost4.8_x64.exe"
-    prepost_path = "D:\LS-PrePost_4.8\lsprepost4.8_x64.exe"
+    prepost_path = "C:\LSDYNA\LS-PrePost\lsprepost4.8_x64.exe"
     # cfile_path='..\..\..\..\optional_files\lspostcmd_multi-section_cut_35-11.cfile'
     cfile_path='..\..\..\..\optional_files\lspostcmd_multi-section_cut.cfile'
 
 
 
-    P4.P4(cpus, solver_path)
+    # P4.P4(cpus, solver_path)
+    # P4_other.P4(cpus, solver_path)
     # P4.P4_2(cpus, prepost_path, cfile_path)
     # print('-----Finish P4------')
 
@@ -60,13 +63,13 @@ if __name__ == '__main__':
     # ref_x = np.arange(-8.5,9,0.5)
     # ref_y_disp_node = "      330"
     # ref_y_disp_node2 = "      326"
-    ref_y_disp_node = "      560" 
-    ref_y_disp_node2 = "      559"
+    ref_y_disp_node = "      247" 
+    ref_y_disp_node2 = "      566"
     model_scale = 1 # full model:1, quater model:2
 
     # P5.P5(ref_y_disp_node, ref_y_disp_node2, model_scale)
     # P5.P5_2()
     # print('-----Finish P5------')   
 
-    # split.split_data(execution_Path)
-    # print('-----Finish Split Data------')   
+    split.split_data("D:\ge24wej\Documents\makedataset\\roughmodel_1024")
+    print('-----Finish Split Data------')   
