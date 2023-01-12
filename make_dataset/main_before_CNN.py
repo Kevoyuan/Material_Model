@@ -5,6 +5,7 @@ from program_files_for_CNN import P4_dyna_lsprepost_run as P4
 from program_files_for_CNN import P4_other 
 
 from program_files_for_CNN import P5_cre_inp_10 as P5
+from program_files_for_CNN import standardization_symm as std_symm
 
 import os
 import numpy as np
@@ -71,5 +72,7 @@ if __name__ == '__main__':
     # P5.P5_2()
     # print('-----Finish P5------')   
 
-    split.split_data("D:\ge24wej\Documents\makedataset\\roughmodel_1024")
-    print('-----Finish Split Data------')   
+    # std_symm.standardization_symm(execution_Path)
+
+    # split.split_data(execution_Path)
+    # print('-----Finish Split Data------')   
