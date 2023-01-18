@@ -154,7 +154,7 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
 
     # １組のx_coordinate, contour_valueを結合し，2D行列にして，csv_file_nameに保尊
     def create_2d_csv(key_path,csv_file_name, x_coordinate_name, contour_value_name):    
-        center_point_coord=[0,1.875] # coordinate of the center point of specimen
+        center_point_coord=[0,1.5] # coordinate of the center point of specimen
         evaluation_area=[8.5,2]      # coordinate of the corner point of evaluation area
         evaluation_point_numbers=[35,11]    # dimension of 2d data
         interval_x=evaluation_area[0]*2/(evaluation_point_numbers[0]-1)  # x-cord of interpolation
