@@ -1,7 +1,7 @@
 import numpy as np
 
 def create_lspostcmd(cmdfile_name="lspostcmd_multi-section_cut.cfile"):
-    center_point_coord=[0,1.875] # coordinate of the center point of specimen
+    center_point_coord=[0,1.5] # coordinate of the center point of specimen
     evaluation_area=[8.5,2]      # coordinate of the corner point of evaluation area
     evaluation_point_numbers=[35,11]    # dimension of 2d data
 
