@@ -7,13 +7,13 @@ import time
 
 from numpy import insert
 
-#csv書き込み関数
+# function to write to a CSV file
 def write_csv(csv_name, data_list):
     with open(csv_name,"w",encoding = "shift_jis",newline = "\n") as f:
         writer = csv.writer(f,lineterminator="\n")
         writer.writerows(data_list)
 
-#各keywordファイルのファイル名とパスを取得
+# function to get the names and paths of each keyword file
 def cre_key_list():
     #parameter_success.csvからkeywordファイルの番号を読み取り
     def read_parameter(parameter_success_csv):
@@ -51,12 +51,12 @@ def cre_key_list():
 #実行部
 def dyna_run(key_list) :
     #dyna_path = "D:\LSDYNA\program\ls-dyna_smp_s_R10_2_0_winx64_ifort160.exe" 
-    NCPU="4"
+    NCPU="2"
     os.chdir(key_list[1])
-    print(key_list[0],"を解析します")
+    print(key_list[0],"is being analyzed")
     subprocess.run(key_list[2] + " I=" + key_list[0] +" NCPU=" + NCPU,shell = True)
 
-    print("解析終了:",key_list[0])
+    print("Analysis completed:",key_list[0])
     return [key_list[0]]
 
 #実行関数
@@ -76,11 +76,11 @@ def P4(cpus=2, solver_path='D:\LSDYNA\program\ls-dyna_smp_d_R12.1_winx64_ifort17
 
     print("finish")
     end_time = time.time()
-    print("総解析時間[s]:", int(end_time - start_time))
+    print("Total analysis time [s]:", int(end_time - start_time))
     os.makedirs('./log', exist_ok = True)
-    output_list = [["LS-DYNA総解析時間[s]", int(end_time - start_time)],
-                   ['LS-DYNAソルバー名', solver_path],
-                   ['解析ファイル数', len(key_list)]]
+    output_list = [["LS-DYNA total analysis time[s]", int(end_time - start_time)],
+                        ['LS-DYNA solver name', solver_path],
+                        ['number of analysis files', len(key_list)]]
     write_csv('./log/ls-dyna_total_time.csv', output_list)
 
 #実行部
@@ -88,10 +88,10 @@ def lsprepost_run(key_list) :
     #D:\LSDYNA\program\lsprepost.exe -nographics c=C:\WorkPy\lspostcmd.cfile
 
     os.chdir(key_list[1])
-    print(key_list[0],"をデータ処理します")
-    subprocess.run(key_list[2] + " -nographics c=" + key_list[3],shell = True)
+    print(key_list[0], "process data")
+    subprocess.run(key_list[2] + " -nographics c=" + key_list[3], shell = True)
 
-    print("データ処理終了:",key_list[0])
+    print("End of data processing:",key_list[0])
     return [key_list[0]]
 
 #実行関数
@@ -112,12 +112,12 @@ def P4_2(cpus=8, solver_path='D:\LSDYNA\program\lsprepost.exe',
 
     print("finish")
     end_time = time.time()
-    print("総データ処理時間[s]:", int(end_time - start_time))
+    print("Total data processing time [s]:", int(end_time - start_time))
     os.makedirs('./log', exist_ok = True)
-    output_list = [["LS-PREPOST総dデータ処理時間[s]", int(end_time - start_time)],
-                   ['LS-PREPOST名', solver_path],
-                   ['cfile名', cfile_path],
-                   ['処理ファイル数', len(key_list)]]
+    output_list = [["LS-PREPOST total d data processing time [s]", int(end_time - start_time)],
+                ['LS-PREPOST name', solver_path],
+                ['cfile name', cfile_path],
+                ['Number of processed files', len(key_list)]]
     write_csv('./log/lsprepost_total_time.csv', output_list)
     
 #以下実行部
