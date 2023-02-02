@@ -37,13 +37,17 @@ def cre_key_list():
 
         return key_No,key_name
 
-    key_No,key_name = read_parameter("D:/ge24wej/Documents/makedataset/roughmodel_1024/log/unfinished_files.csv")
+    key_No,key_name = read_parameter(".././roughmodel_test/log/unfinished_files.csv")
 
     #keywordファイルの名前一覧の取得
     key_list = []
 
     for i in key_name:
-        a = [i.split("\\")[-1] + ".k", os.getcwd() + i]
+        a = [i.split("\\")[-1] + ".k"
+        , os.getcwd()+"\\"+i.split("\\",2)[2]
+        ]
+
+        # print(a)
 
 
         key_list.append(a)

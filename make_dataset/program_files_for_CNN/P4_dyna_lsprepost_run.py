@@ -4,7 +4,7 @@ import subprocess
 from multiprocessing import Pool
 import csv
 import time
-
+import glob
 from numpy import insert
 
 # function to write to a CSV file

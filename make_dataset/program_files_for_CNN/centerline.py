@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Specify the main directory where the CSV files are located
-main_dir = 'roughmodel_test/dataset_inp'
+main_dir = 'roughmodel_test0/dataset_inp'
 
 # Get total number of files
 total_files = 4096

@@ -3,6 +3,7 @@ import os
 import pprint
 import copy
 import numpy as np
+from tqdm import tqdm
 
 def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
 
@@ -87,6 +88,8 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
           
     #Y_disp - Y_force カーブのデータセットの作成    
     def create_FS_dataset(key_path_list):
+
+        print("creating FS dataset")
             
         list_fy = []
         list_fy_dataset = []
@@ -145,18 +148,23 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
 
     # 全てのkeywordフォルダにおいて，全てのひずみ（contour_value_name_list）を補間2Dにして，そのフォルダにcsv_file_nameのファイル名でcsv保存する
     def create_2d_csv_all(key_list,csv_file_names_list, x_coordinate_name_list, contour_value_name_list):
-        for i in key_list:
-            for j in range(len(contour_value_name_list)):
-                csv_file_name=i[1] + '\\' + csv_file_names_list[j]
-                create_2d_csv(i[1],csv_file_name, x_coordinate_name_list[0], contour_value_name_list[j])
 
+        total = len(key_list) * len(contour_value_name_list)
+        with tqdm(total=total) as pbar:
+            for i in key_list:
+                for j in range(len(contour_value_name_list)):
+                    csv_file_name=i[1] + '\\' + csv_file_names_list[j]
+                    create_2d_csv(i[1],csv_file_name, x_coordinate_name_list[0], contour_value_name_list[j])
+        pbar.update(1)
         return    
 
     # １組のx_coordinate, contour_valueを結合し，2D行列にして，csv_file_nameに保尊
     def create_2d_csv(key_path,csv_file_name, x_coordinate_name, contour_value_name):    
+        print("creating 2d csv")
+
         center_point_coord=[0,1.5] # coordinate of the center point of specimen
-        evaluation_area=[8.5,2]      # coordinate of the corner point of evaluation area
-        evaluation_point_numbers=[35,11]    # dimension of 2d data
+        evaluation_area=[6.5,1.5]      # coordinate of the corner point of evaluation area
+        evaluation_point_numbers=[55,11]    # dimension of 2d data
         interval_x=evaluation_area[0]*2/(evaluation_point_numbers[0]-1)  # x-cord of interpolation
         interval_y=evaluation_area[1]*2/(evaluation_point_numbers[1]-1)
 
@@ -192,6 +200,7 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
         return
 
     def create_2d_dataset(key_path_list,csv_file_name_list,data_type_list,strain_scale):
+
         inp_path_list = []
         dataset_inp_path_list = []
         inp_csv_list = []
@@ -222,7 +231,9 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
 
         pprint.pprint(inp_path_list)
 
-        for i in range(len(key_path_list)): # 保存するファイル名のリスト，データ
+
+        for i in tqdm(range(len(key_path_list)), desc='Processing folders (create_2d_dataset)'): 
+        # for i in range(len(key_path_list)): # 保存するファイル名のリスト，データ
             for j in range(len(csv_file_name_list)):
                 file_name=key_path_list[i][1] + '\\' + csv_file_name_list[j]
                 data=read_data_from_csv(file_name,header=0)
@@ -263,16 +274,21 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
         return ad_list_xy1, ad_list_xy1_dataset
 
     # 実行部
-    csv_file_name_list=["X_strain_2D_35-11.csv","Y_strain_2D_35-11.csv"] # counter plot number of lsprepost
+    csv_file_name_list=["X_strain_2D_55-11.csv","Y_strain_2D_55-11.csv"] # counter plot number of lsprepost
     x_coordinate_name_list=["x-coordinate"]
     contour_value_name_list=["X_strain","Y_strain"]
     data_type_list=[1,57,58]
 
     key_path_list = cre_key_list()  # 0,45,90を含むkeywordファイルのファイル名と全フォルダリストを取得
-    create_FS_dataset(key_path_list)
-    create_2d_csv_all(key_path_list,csv_file_name_list, x_coordinate_name_list, contour_value_name_list)
-    strain_scale=5
-    create_2d_dataset(key_path_list,csv_file_name_list,data_type_list,strain_scale)
+    # create_FS_dataset(key_path_list)
+    # print("------Finish create_FS)dataset------")
+
+    # create_2d_csv_all(key_path_list,csv_file_name_list, x_coordinate_name_list, contour_value_name_list)
+    # print("------Finish create_2d_csv_all------")
+    # strain_scale=5
+    # create_2d_dataset(key_path_list,csv_file_name_list,data_type_list,strain_scale)
+    # print("------Finish create_2d_dataset------")
+
 
 
     # create dataset_inp_path.csv
@@ -295,6 +311,7 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
 
         csv_path.append(ad_list)
     
+    print("Writing csvs......")
     write_csv('dataset_inp_path.csv', csv_path)
 
     os.rename('./dataset_inp_path.csv', './dataset_inp/dataset_inp_path.csv')
@@ -303,6 +320,8 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
     return
 
 def P5_2():
+
+    print("Running P5_2......")
     #csvファイルの値をリスト（ndarrayではない）に読み取り
     def read_csv(csv_name):
         with open(csv_name,'r') as paraf :
@@ -325,7 +344,7 @@ def P5_2():
 
 
     dataset=[]  #datasetとして，input,outputを結合
-    for i in range(len(dataset_input)):
+    for i in tqdm(range(len(dataset_input)), desc='Processing data (input+output)'):
         dataset.append(dataset_input[i]+dataset_output[i])
 
     # symmetric operation
@@ -338,8 +357,8 @@ def P5_2():
             symmetry_dataset_input[i][2*j],symmetry_dataset_input[i][2*j+1]=symmetry_dataset_input[i][2*j+1],symmetry_dataset_input[i][2*j]
             
     # print(symmetry_dataset_input)
-
-    for i in range(len(symmetry_dataset_input)):
+    for i in tqdm(range(len(symmetry_dataset_input)), desc='Processing symmetry data (input+output)'):
+    # for i in range(len(symmetry_dataset_input)):
         dataset.append(symmetry_dataset_input[i]+symmetry_dataset_output[i])  
     
     write_csv("./dataset.csv",dataset)
