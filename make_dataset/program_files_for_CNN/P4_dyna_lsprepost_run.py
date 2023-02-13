@@ -40,7 +40,9 @@ def cre_key_list():
     key_list = []
     for i in key_No:
         # for j in ["_0", "_45", "_90"]:
-        for j in ["_0", "_90"]:
+        # for j in ["_0", "_90"]:
+        for j in ["_0"]:
+
 
             # a = ["keyword" + i + j + ".k", os.getcwd() + "/keyword/keyword" + i + "/keyword" + i + j]
             a = ["keyword" + i + j + ".k", os.getcwd() + "\\keyword\\keyword" + i + "\\keyword" + i + j]
@@ -51,7 +53,7 @@ def cre_key_list():
 #実行部
 def dyna_run(key_list) :
     #dyna_path = "D:\LSDYNA\program\ls-dyna_smp_s_R10_2_0_winx64_ifort160.exe" 
-    NCPU="2"
+    NCPU="8"
     os.chdir(key_list[1])
     print(key_list[0],"is being analyzed")
     subprocess.run(key_list[2] + " I=" + key_list[0] +" NCPU=" + NCPU,shell = True)

@@ -89,7 +89,9 @@ def P2():
     a, b = read_parameter(parameter_csv_name)                           #読み取る試験条件やYLD2000-2dのパラメータのcsvファイル名を入力
 
     # RD_list = [0, 45, 90]                                               #圧延方向[0, 45, 90 deg]
-    RD_list = [0, 90]                                               #圧延方向[0, 45, 90 deg]
+    RD_list = [0
+    # , 90
+    ]                                               #圧延方向[0, 45, 90 deg]
     
     write_keyword(a, b,'../../../../optional_files/main_explicit.k', RD_list)                              
 

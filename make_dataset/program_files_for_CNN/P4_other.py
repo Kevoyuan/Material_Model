@@ -37,7 +37,7 @@ def cre_key_list():
 
         return key_No,key_name
 
-    key_No,key_name = read_parameter(".././roughmodel_test/log/unfinished_files.csv")
+    key_No,key_name = read_parameter("./log/unfinished_files.csv")
 
     #keywordファイルの名前一覧の取得
     key_list = []
@@ -99,15 +99,14 @@ def P4(cpus=2, solver_path='D:\LSDYNA\program\ls-dyna_smp_d_R12.1_winx64_ifort17
     # log_file.close()
 
 
-
     print("finish")
     end_time = time.time()
-    print("総解析時間[s]:", int(end_time - start_time))
+    print("Total analysis time [s]:", int(end_time - start_time))
     os.makedirs('./log', exist_ok = True)
-    output_list = [["LS-DYNA総解析時間[s]", int(end_time - start_time)],
-                   ['LS-DYNAソルバー名', solver_path],
-                   ['解析ファイル数', len(key_list)]]
-    write_csv('./log/ls-dyna_total_time.csv', output_list)
+    output_list = [["LS-DYNA total analysis time[s]", int(end_time - start_time)],
+                        ['LS-DYNA solver name', solver_path],
+                        ['number of analysis files', len(key_list)]]
+    write_csv('./log/ls-dyna_total_time2.csv', output_list)
 
 #実行部
 def lsprepost_run(key_list) :
@@ -144,7 +143,7 @@ def P4_2(cpus=8, solver_path='D:\LSDYNA\program\lsprepost.exe',
                    ['LS-PREPOST名', solver_path],
                    ['cfile名', cfile_path],
                    ['処理ファイル数', len(key_list)]]
-    write_csv('./log/lsprepost_total_time.csv', output_list)
+    write_csv('./log/lsprepost_total_time2.csv', output_list)
     
 #以下実行部
 if __name__ == '__main__':

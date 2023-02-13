@@ -280,19 +280,20 @@ def P1(end_count, sig45_range, sig90_range, sigb_range, r00_range, r45_range, r9
 
     #ログ書出し
     os.makedirs('./log', exist_ok = True)
-    log_list = [['計算にかかった時間[秒]', math.floor(process_time)],
-                ['総パラメータ数', n],
-                ['成功パラメータ数', n_success],
-                ['失敗パラメータ数', n_failure],
-                ['Mの範囲', str(M_range)],
-                ['sig00の値', 1],
-                ['sgm45の範囲', str(sig45_range)],
-                ['sgm90の範囲', str(sig90_range)],
-                ['sgmbの範囲', str(sigb_range)],
-                ['r00の範囲', str(r00_range)],
-                ['r45の範囲', str(r45_range)],
-                ['r90の範囲', str(r90_range)],
-                ['rbの範囲', str(rb_range)]]
+    log_list = [["Time taken for computation [seconds]", math.floor(process_time)],
+                ["Total number of parameters", n],
+                ["Number of successfully computed parameters", n_success],
+                ["Number of failed parameters", n_failure],
+                ["Range of M", str(M_range)],
+                ["Value of sig00", 1],
+                ["Range of sgm45", str(sig45_range)],
+                ["Range of sgm90", str(sig90_range)],
+                ["Range of sgmb", str(sigb_range)],
+                ["Range of r00", str(r00_range)],
+                ["Range of r45", str(r45_range)],
+                ["Range of r90", str(r90_range)],
+                ["Range of rb", str(rb_range)]]
+
     write_csv('./log/parameter_log.csv', log_list)
     return
 

@@ -43,7 +43,9 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
         key_No = cre_key_No()
         for i in key_No:
             # for j in ["_0", "_45", "_90"]:
-            for j in ["_0", "_90"]:
+            # for j in ["_0", "_90"]:
+            for j in ["_0"]:
+            
 
                 a = ["keyword" + i + j + ".k", os.getcwd() + "/keyword/keyword" + i + "/keyword" + i + j]
                 key_list.append(a)
@@ -87,56 +89,77 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
         return ad_list_fy, ad_list_fy_dataset
           
     #Y_disp - Y_force カーブのデータセットの作成    
+    # def create_FS_dataset(key_path_list):
+
+    #     print("creating FS dataset")
+            
+    #     list_fy = []
+    #     list_fy_dataset = []
+
+    #     # for i in key_path_list:
+            
+    #     #     #Y_disp - Y_force カーブの作成
+    #     #     ad_list_fy, ad_list_fy_dataset = create_ydisp_yforce_curve(i, model_scale, ref_y_disp_node, ref_y_disp_node2)
+    #     #     list_fy.append(ad_list_fy)   # 変位ー荷重曲線の2列データ
+    #     #     list_fy_dataset.append(ad_list_fy_dataset)   # 変位ー荷重曲線を10000で割っての2列データ
+
+    #     #keywordファイルの名前一覧の取得
+    #     inp_path_list = []
+    #     dataset_inp_path_list = []
+    #     inp_csv_list = []
+    #     dataset_inp_csv_list = []
+    
+    #     for i in cre_key_No():
+    #         a = os.getcwd() + "/inp/inp" + i
+    #         b = os.getcwd() + "/dataset_inp/dataset_inp" + i
+    #         inp_path_list.append(a)
+    #         dataset_inp_path_list.append(b)
+
+    #         # for j in ["_0", "_45", "_90"]:
+    #         for j in ["_0", "_90"]:
+
+    #             a = os.getcwd() + "/inp/inp" + i
+    #             b = os.getcwd() + "/dataset_inp/dataset_inp" + i
+    #             c = a + '/inp_1_' + i + j + '.csv'
+    #             d = b + '/dataset_inp_1_' + i + j + '.csv'
+    
+
+
+    #             inp_csv_list.append(c)
+    #             dataset_inp_csv_list.append(d)
+
+
+    #     for i, j in zip(inp_path_list, dataset_inp_path_list):
+    #         os.makedirs(i, exist_ok = True)
+    #         os.makedirs(j, exist_ok = True)
+
+    #     pprint.pprint(inp_path_list)
+
+    #     # for i, j, k, l in zip(inp_csv_list, dataset_inp_csv_list, list_fy, list_fy_dataset): # 保存するファイル名のリスト（＋正規化），データ
+    #     #     write_csv(i, k)
+    #     #     write_csv(j, l)
+    #     return
+
+    
     def create_FS_dataset(key_path_list):
-
-        print("creating FS dataset")
-            
-        list_fy = []
-        list_fy_dataset = []
-
-        for i in key_path_list:
-            
-            #Y_disp - Y_force カーブの作成
-            ad_list_fy, ad_list_fy_dataset = create_ydisp_yforce_curve(i, model_scale, ref_y_disp_node, ref_y_disp_node2)
-            list_fy.append(ad_list_fy)   # 変位ー荷重曲線の2列データ
-            list_fy_dataset.append(ad_list_fy_dataset)   # 変位ー荷重曲線を10000で割っての2列データ
-
-        #keywordファイルの名前一覧の取得
-        inp_path_list = []
-        dataset_inp_path_list = []
-        inp_csv_list = []
-        dataset_inp_csv_list = []
+        print("creating dataset path..")
     
-        for i in cre_key_No():
-            a = os.getcwd() + "/inp/inp" + i
-            b = os.getcwd() + "/dataset_inp/dataset_inp" + i
-            inp_path_list.append(a)
-            dataset_inp_path_list.append(b)
-
-            # for j in ["_0", "_45", "_90"]:
-            for j in ["_0", "_90"]:
-
-                a = os.getcwd() + "/inp/inp" + i
-                b = os.getcwd() + "/dataset_inp/dataset_inp" + i
-                c = a + '/inp_1_' + i + j + '.csv'
-                d = b + '/dataset_inp_1_' + i + j + '.csv'
+        # Create path lists
+        inp_path_list = [f"{os.getcwd()}/inp/inp{i}" for i in cre_key_No()]
+        dataset_inp_path_list = [f"{os.getcwd()}/dataset_inp/dataset_inp{i}" for i in cre_key_No()]
+        # csv_suffix = ["_0", "_90"]
+        # inp_csv_list = [f"{path}/inp_1_{i}{suffix}.csv" for path, i, suffix in zip(inp_path_list, cre_key_No(), csv_suffix * len(cre_key_No()))]
+        # dataset_inp_csv_list = [f"{path}/dataset_inp_1_{i}{suffix}.csv" for path, i, suffix in zip(dataset_inp_path_list, cre_key_No(), csv_suffix * len(cre_key_No()))]
     
-
-
-                inp_csv_list.append(c)
-                dataset_inp_csv_list.append(d)
-
-
+        # Create directories
         for i, j in zip(inp_path_list, dataset_inp_path_list):
-            os.makedirs(i, exist_ok = True)
-            os.makedirs(j, exist_ok = True)
-
+            os.makedirs(i, exist_ok=True)
+            os.makedirs(j, exist_ok=True)
+    
         pprint.pprint(inp_path_list)
+    
 
-        for i, j, k, l in zip(inp_csv_list, dataset_inp_csv_list, list_fy, list_fy_dataset): # 保存するファイル名のリスト（＋正規化），データ
-            write_csv(i, k)
-            write_csv(j, l)
-        return
+
 
     #read data as np.array
     def read_data_from_csv(file_name,header=2):
@@ -160,7 +183,7 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
 
     # １組のx_coordinate, contour_valueを結合し，2D行列にして，csv_file_nameに保尊
     def create_2d_csv(key_path,csv_file_name, x_coordinate_name, contour_value_name):    
-        print("creating 2d csv")
+        # print("creating 2d csv")
 
         center_point_coord=[0,1.5] # coordinate of the center point of specimen
         evaluation_area=[6.5,1.5]      # coordinate of the corner point of evaluation area
@@ -213,7 +236,9 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
             dataset_inp_path_list.append(b)
 
             # for j in ["_0", "_45", "_90"]:
-            for j in ["_0", "_90"]:
+            # for j in ["_0", "_90"]:
+            for j in ["_0"]:
+            
 
                 a = os.getcwd() + "/inp/inp" + i
                 b = os.getcwd() + "/dataset_inp/dataset_inp" + i
@@ -280,26 +305,28 @@ def P5(ref_y_disp_node, ref_y_disp_node2, model_scale):
     data_type_list=[1,57,58]
 
     key_path_list = cre_key_list()  # 0,45,90を含むkeywordファイルのファイル名と全フォルダリストを取得
-    # create_FS_dataset(key_path_list)
-    # print("------Finish create_FS)dataset------")
+    create_FS_dataset(key_path_list)
+    print("------Finish create_FS dataset------")
 
-    # create_2d_csv_all(key_path_list,csv_file_name_list, x_coordinate_name_list, contour_value_name_list)
-    # print("------Finish create_2d_csv_all------")
-    # strain_scale=5
-    # create_2d_dataset(key_path_list,csv_file_name_list,data_type_list,strain_scale)
-    # print("------Finish create_2d_dataset------")
+    create_2d_csv_all(key_path_list,csv_file_name_list, x_coordinate_name_list, contour_value_name_list)
+    print("------Finish create_2d_csv_all------")
+    strain_scale=5
+    create_2d_dataset(key_path_list,csv_file_name_list,data_type_list,strain_scale)
+    print("------Finish create_2d_dataset------")
 
 
 
     # create dataset_inp_path.csv
     # csv_path = [['x1:FS_0deg', 'x2:FS_45deg', 'x3:FS_90deg', 'x4__0:X2D_0deg', 'x5__0:X2D_45deg', 'x6__0:X2D_90deg', 
     #              'x4__1:Y2D_0deg', 'x5__1:Y2D_45deg', 'x6__1:Y2D_90deg']]
-    csv_path = [['x1:FS_0deg', 'x3:FS_90deg', 'x4__0:X2D_0deg',  'x6__0:X2D_90deg', 
-                 'x4__1:Y2D_0deg', 'x6__1:Y2D_90deg']]
+    csv_path = [['x1:FS_0deg', 'x3:FS_90deg', 'x4__0:X2D_0deg',  
+                 'x4__1:Y2D_0deg']]
 
 
     # RD_list=['_0.csv','_45.csv','_90.csv']
-    RD_list=['_0.csv','_90.csv']
+    # RD_list=['_0.csv','_90.csv']
+    RD_list=['_0.csv']
+
 
 
     for i in cre_key_No():
