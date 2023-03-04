@@ -11,7 +11,7 @@ def read_subfolders(path):
         "remove",
     ]
     sub_folders = [ele for ele in sub_folders if ele not in remove_list]
-    # print(sub_folders)
+    print(sub_folders)
     sub_folders = sorted(sub_folders, key=lambda s: float(s.split("_")[1]))
 
     return sub_folders
