@@ -39,25 +39,26 @@ python EX2NN.py
 ├── make_dataset/ - Data generation and preprocessing
 ├── yld2000/ - Yield function analysis and visualization
 ├── experiment_data/ - Raw experimental datasets
-├── FEM_model_modify.py - Finite Element Model generator
-├── tensile_test.py - Core tensile test analysis module
-└── Modify_postfile.py - LS-DYNA result postprocessor
+├── utils/
+    └── script_helpers/ - Utility scripts and helper functions
+└── analysis/ - Scripts for displacement and force analysis
 ```
 
 ## Documentation
 
 ### Dataset Generation Pipeline
 **Workflow Stages**:
-1. `P1_cre_para_csv_3.py` - Generates random material parameters using symbolic math
+1. `make_dataset/scripts/P1_cre_para_csv_3.py` - Generates random material parameters using symbolic math
 2. `P2_cre_key_files.py` - Creates LS-DYNA keyword files from parameters
 3. `P3_cre_outp_*.py` - Standardizes FEM simulation outputs
 4. `P4_dyna_*.py` - Automated LS-DYNA batch processing
 5. `P5_cre_inp_10.py` - Prepares ML-ready input tensors
 6. `P6_*.py` - Calculates yield surface errors
 7. `P7_edit_ex_modify_data3.py` - Validates experimental data formats and converts to ML-compatible structures
-8. `P8_nnabla_run2.py` - Neural network training execution with hyperparameter configuration
+8. `make_dataset/scripts/P8_nnabla_run2.py` - Neural network training execution with hyperparameter configuration
 
 **Key Features**:
+- 📂 Scripts organized in make_dataset/scripts and utils directories
 - 🧩 Parameter space exploration with sympy
 - ⚡ Parallel LS-DYNA execution
 - 📈 Strain data normalization pipelines
@@ -88,3 +89,22 @@ python EX2NN.py
 
 ## License
 [MIT](LICENSE)
+
+# Material Modeling Project Setup
+
+## Virtual Environment
+
+1. Activate virtual environment (Windows):
+```
+.\.venv\Scripts\activate
+```
+
+2. Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+3. Deactivate with:
+```
+deactivate
+```

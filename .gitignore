@@ -87,3 +87,4 @@ test.py
 *.npy
 *node_des
 fit_tri.ipynb
+.venv
