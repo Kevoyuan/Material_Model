@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 import glob
 
 
-
 def get_subfolders(folderpath):
 
     sub_folders = [
@@ -18,7 +17,7 @@ def get_subfolders(folderpath):
 
 
 def read_bulge(source):
-    
+
     data = pd.read_csv(source, sep=";", header=0, index_col=False)
     data = data.fillna(0)
     # column_headers = list(data.columns.values)
@@ -32,7 +31,7 @@ def read_bulge(source):
 
 
 def read_flow(file):
-    
+
     data = pd.read_csv(file, sep=";", header=0, index_col=False)
     data = data.fillna(0)
     # column_headers = list(data.columns.values)
@@ -110,6 +109,7 @@ def plasticwork_total(sigma_x, plastic_x, sigma_y, plastic_y):
 
     return pw_total, px, py
 
+
 def write_csv(sigma_x, sigma_y, x_strain, y_strain, filename):
 
     x_stress = sigma_x
@@ -120,7 +120,6 @@ def write_csv(sigma_x, sigma_y, x_strain, y_strain, filename):
             "x_strain": x_strain,
             "y_strain": y_strain,
             "x_stress": x_stress,
-
             "y_stress": y_stress,
         }
     )
@@ -128,6 +127,7 @@ def write_csv(sigma_x, sigma_y, x_strain, y_strain, filename):
     df_Model.to_csv(f"./{x[1]}_analysed.csv")
     # df_Model.to_csv(f"/{filename}_analysed.csv")
     print("success")
+
 
 def main():
     # sub_folders = get_subfolders("./experiment_data/bulge_test")
@@ -137,21 +137,14 @@ def main():
 
     csv_files = glob.glob("./experiment_data/bulge_test/*Test_data.csv")
 
-
-
     li = []
 
     for filename in csv_files:
-       
-       
-    
 
         true_strain, true_stress = read_bulge(filename)
 
-        
-        
-        thickness, sigma_x, plastic_x, sigma_y, plastic_y, x_strain, y_strain = calc_params(
-            true_strain, true_stress
+        thickness, sigma_x, plastic_x, sigma_y, plastic_y, x_strain, y_strain = (
+            calc_params(true_strain, true_stress)
         )
         pw_total, px, py = plasticwork_total(sigma_x, plastic_x, sigma_y, plastic_y)
         # print(plasticwork)

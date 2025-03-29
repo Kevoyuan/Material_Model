@@ -1,54 +1,45 @@
 
-def find_strain(StrainPath, eq_StrainPath, strain_value):
-    # calcuate the triaxial strain, plan strain and uniaxial strain
-    # strain_value = 2/3, 1 / np.sqrt(3), 1/3
+import pandas as pd
+import numpy as np
+from pathlib import Path
 
-    df_var = pd.read_csv(StrainPath, header=1)
+def find_strain(strain_path: Path, eq_strain_path: Path, target_value: float) -> tuple:
+    """Calculate strain values using vectorized operations with error handling."""
+    try:
+        # Read data using context manager
+        df_strain = pd.read_csv(strain_path, header=1)
+        df_eq = pd.read_csv(eq_strain_path, header=1)
+        
+        # Validate data structure
+        if df_strain.shape[1] < 2 or df_eq.shape[1] < 2:
+            raise ValueError("Invalid CSV file structure")
 
-    column_headers = list(df_var.columns.values)
+        # Process using vectorized operations
+        x = df_strain.iloc[:, 0].values
+        y = pd.to_numeric(df_strain.iloc[:, 1], errors='coerce').values
+        eq_strain = pd.to_numeric(df_eq.iloc[:, 1], errors='coerce').values
 
-    x_var = df_var[column_headers[0]]
+        # Find nearest strain using numpy
+        valid_idx = np.where(np.isfinite(y))[0]
+        if valid_idx.size == 0:
+            return (0.0, 0.0)
+            
+        nearest_idx = np.abs(y[valid_idx] - target_value).argmin()
+        strain_position = x[valid_idx][nearest_idx]
+        
+        # Calculate adjusted position
+        strain_position = abs(strain_position - 0.5 * x.max())
+        return (eq_strain[valid_idx][nearest_idx], strain_position)
+        
+    except (FileNotFoundError, pd.errors.ParserError) as e:
+        print(f"Error processing files: {e}")
+        return (0.0, 0.0)
 
-    y_var = df_var[column_headers[1]]
-
-    y_lim_idx = y_var.argmax()
-    x_lim = x_var[y_lim_idx]
-
-    if x_lim > int(0.5 * x_var.max()):
-        x_lim = x_var.max() - x_lim
-
-    x_lim = x_lim - 0.8
-
-    y_strain, strain_position_idx = find_nearest(y_var, value=strain_value)
-
-    strain_position = x_var.iloc[strain_position_idx]
-
-    df_strain = pd.read_csv(eq_StrainPath, header=1)
-
-    column_headers_strain = list(df_strain.columns.values)
-
-    df_eq_strain = df_strain[column_headers_strain[1]]
-
-    target_strain = df_eq_strain.iloc[strain_position_idx]
-    print("\ny_strain_0:", y_strain)
-
-    print("\ntarget_strain:", target_strain)
-
-    strain_position = abs(strain_position - 0.5 * x_var.max())
-    print("\nplane_strain_position:", strain_position)
-
-    return target_strain, strain_position
-
-def find_plane_strain(fem_model):
-    # # curve of Triaxiality
-    y_strain_path = f"{fem_model}/y_strain.csv"
-
-    # # Strain Curve
-    Strain_path = f"{fem_model}/StrainCurve.csv"
-
-    # plane strain occures in y_strain = 0
-    y_strain = 0
-
-    plane_strain, distance = find_strain(y_strain_path, Strain_path, y_strain)
-
-    return plane_strain, distance
+def find_plane_strain(fem_model: str) -> tuple:
+    """Find plane strain location using optimized path handling."""
+    model_path = Path(fem_model)
+    return find_strain(
+        model_path/"y_strain.csv",
+        model_path/"StrainCurve.csv",
+        target_value=0.0
+    )

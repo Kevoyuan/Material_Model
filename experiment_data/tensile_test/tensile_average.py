@@ -55,16 +55,17 @@ def calc_min_len(csv_files):
 
     return min_len
 
+
 def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return idx
 
 
-def gen_avg(min_len, temp_files,pl_strain):
+def gen_avg(min_len, temp_files, pl_strain):
 
     df2 = pd.DataFrame(np.zeros((min_len, 5)))
-    print("temp_files: ",temp_files)
+    print("temp_files: ", temp_files)
     df2.columns = ["x_strain", "y_strain", "x_stress", "y_stress", "r_value"]
     # filename = None
     files_counter = 0
@@ -84,15 +85,12 @@ def gen_avg(min_len, temp_files,pl_strain):
     # remove outlier of r_value
     # r_mean = stats.trim_mean(df2["r_value"], 0.1)
 
-
-
     # df2 = df2.iloc[:, :4]
-
 
     if "_0_" in temp_files[0]:
         idx = find_nearest(df2["x_strain"], pl_strain)
 
-        r_value = df2.loc[idx, 'r_value']
+        r_value = df2.loc[idx, "r_value"]
 
         print("\n\noutput:", f"./ex_data_raw/00deg.csv done!")
         print("\n\nr_value_0:", r_value)
@@ -104,7 +102,7 @@ def gen_avg(min_len, temp_files,pl_strain):
         print("\n\noutput:", f"./ex_data_raw/90deg.csv done!")
         idx = find_nearest(df2["y_strain"], pl_strain)
 
-        r_value = df2.loc[idx, 'r_value']
+        r_value = df2.loc[idx, "r_value"]
 
         df2 = df2.iloc[:, :4]
 
@@ -115,7 +113,7 @@ def gen_avg(min_len, temp_files,pl_strain):
         print("\n\noutput:", f"./ex_data_raw/45deg.csv done!")
         idx = find_nearest(df2["x_strain"], pl_strain)
 
-        r_value = df2.loc[idx, 'r_value']
+        r_value = df2.loc[idx, "r_value"]
         df2 = df2.iloc[:, :4]
 
         df2.to_csv(f"./ex_data_raw/45deg.csv", header=False, index=False)
@@ -147,7 +145,7 @@ def main():
     print("\n\ncsv_files:", csv_files_deg)
 
     min_len = calc_min_len(csv_files_deg)
-    gen_avg(min_len, temp_files_deg,pl_strain)
+    gen_avg(min_len, temp_files_deg, pl_strain)
 
 
 if __name__ == "__main__":

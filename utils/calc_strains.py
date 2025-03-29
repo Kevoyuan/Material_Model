@@ -1,73 +1,54 @@
-import pandas as pd
-import numpy as np
-from intersect import intersection
-from find_nearest_value import find_nearest
-
-
 def calculate_strains(fem_model):
-    x_path = f"{fem_model}/x_strain.csv"
-    y_path = f"{fem_model}/y_strain.csv"
-    eq_path = f"{fem_model}/StrainCurve.csv"
+    """Calculate strain values from FEM simulation results with error handling."""
+    import os
+    import pandas as pd
+    import numpy as np
+    
+    def read_strain_data(path):
+        """Helper function to read and process strain CSV files."""
+        try:
+            df = pd.read_csv(path, header=1)
+            distance = df.iloc[:, 0] - 0.5 * df.iloc[:, 0].max()
+            strain = df.iloc[:, 1]
+            return distance.values, strain.values
+        except (FileNotFoundError, pd.errors.ParserError) as e:
+            print(f"Error reading {path}: {e}")
+            return None, None
 
-    dfx = pd.read_csv(x_path, header=1)
+    # Load data using helper function
+    base_path = os.path.join(fem_model, "")
+    x_dist, x_strain = read_strain_data(os.path.join(base_path, "x_strain.csv"))
+    y_dist, y_strain = read_strain_data(os.path.join(base_path, "y_strain.csv"))
+    eq_dist, eq_strain = read_strain_data(os.path.join(base_path, "StrainCurve.csv"))
 
-    column_headers_x = list(dfx.columns.values)
+    # Validate data
+    if None in (x_strain, y_strain, eq_strain):
+        return (0.0, 0.0, 0.0, 0.0)
 
-    dfx_distance = dfx[column_headers_x[0]]
+    # Find intersection point using vectorized operations
+    try:
+        intersect_idx = np.argwhere(np.diff(np.sign(x_strain - y_strain))).flatten()
+        if len(intersect_idx) == 0:
+            raise ValueError("No intersection found between X and Y strains")
+            
+        biaxial_distance = x_dist[intersect_idx[0]]
+        biaxial_value = x_strain[intersect_idx[0]]
+    except Exception as e:
+        print(f"Intersection error: {e}")
+        biaxial_distance = biaxial_value = 0.0
 
-    dfx_strain = dfx[column_headers_x[1]]
-    dfx_distance = dfx_distance - 0.5 * dfx_distance.max()
+    # Find plane strain location (nearest to zero in Y strain)
+    try:
+        plane_idx = np.argmin(np.abs(y_strain))
+        plane_distance = abs(eq_dist[plane_idx])
+        plane_value = eq_strain[plane_idx]
+    except Exception as e:
+        print(f"Plane strain error: {e}")
+        plane_distance = plane_value = 0.0
 
-    x1 = np.array(dfx_distance).reshape(-1, 1)
-    y1 = np.array(dfx_strain).reshape(-1, 1)
-
-    dfy = pd.read_csv(y_path, header=1)
-
-    column_headers_y = list(dfy.columns.values)
-
-    # dfy_distance = dfy[column_headers_y[0]]
-
-    dfy_strain = dfy[column_headers_y[1]]
-
-    x2 = x1
-
-    y2 = np.array(dfy_strain).reshape(-1, 1)
-
-    # find intersection of x and y strain
-    x, y = intersection(x1, y1, x1, y2)
-
-    dfeq = pd.read_csv(eq_path, header=1)
-
-    column_headers_eq = list(dfeq.columns.values)
-
-    dfeq_distance = dfeq[column_headers_eq[0]]
-
-    dfeq_strain = dfeq[column_headers_eq[1]]
-    dfeq_distance = dfeq_distance - 0.5 * dfeq_distance.max()
-
-    print(f"\nx = {x}\ny = {y}")
-
-    biaxial_distance = x[1]
-
-    # locate the index of biaxial strain
-    bi_distance, bi_idx = find_nearest(y1, value=y[1])
-    print(f"idx: {bi_idx}")
-
-    # biaxial_strain
-    biaxial_strain = dfeq_strain[bi_idx]
-
-    # locate the index of plane strain
-    pl_distance, plane_idx = find_nearest(y2, value=0)
-
-    # plane_strain
-    plane_strain = dfeq_strain[plane_idx]
-    plane_distance = abs(dfeq_distance[plane_idx])
-
-    print(f"\n\nbixaial distance1 = {biaxial_distance}")
-
-    print(f"\n\nbixaial strain = {biaxial_strain}")
-
-    print(f"\n\nplane distance = {plane_distance}")
-
-    print(f"\n\nplane strain = {plane_strain}")
-    return biaxial_distance, biaxial_strain, plane_distance, plane_strain
+    return (
+        float(biaxial_distance), 
+        float(eq_strain[intersect_idx[0]] if intersect_idx.size else 0.0),
+        float(plane_distance),
+        float(plane_value)
+    )

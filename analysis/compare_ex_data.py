@@ -91,7 +91,7 @@ def main():
 
         # Plot the data and add it to the current plot
         plot_diagrams(length, eps_x, eps_y, phiM, curvetype, label)
-        
+
     plt.xlabel("section along middle line in mm")
     plt.ylabel("eq. strain")
 
