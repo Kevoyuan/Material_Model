@@ -239,9 +239,6 @@ This repository was developed for the master’s thesis:
 
 The supplied thesis overview summarizes the two main approaches used in the work—**Inverse Analysis** and **Machine Learning**—and highlights the role of LS-DYNA, LS-OPT, strain-field evaluation, and YLD2000-2d parameter identification.
 
-## Author
-
-- [Zhengxuan Yuan (@Kevoyuan)](https://github.com/Kevoyuan)
 
 ## Contributing
 
