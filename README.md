@@ -3,8 +3,10 @@
 Research code for the master’s thesis **“Characterization of the Anisotropy of Sheet Materials using an Innovative Specimen Geometry.”** The project combines **experimental strain data**, **LS-DYNA finite-element simulations**, **YLD2000-2d anisotropic yield modeling**, **inverse analysis**, and **neural-network-assisted parameter inference**.
 
 <p align="center">
-  <img src="assets/material_model_workflow.svg" alt="Material_Model research workflow" width="100%">
+  <img src="assets/material_model_workflow.png" alt="Thesis overview showing the biaxial specimen, YLD2000-2d stress states, inverse analysis, and machine-learning workflows" width="100%">
 </p>
+
+<p align="center"><sub>From biaxial specimen design and full-field strain measurements to YLD2000-2d parameter identification.</sub></p>
 
 The central goal is to identify anisotropic sheet-material behavior from the response of an innovative biaxial specimen. The work compares two complementary strategies:
 
@@ -88,7 +90,7 @@ A typical dataset-generation and inference workflow is organized as the followin
 ├── README.md
 ├── LICENSE
 ├── assets/
-│   └── material_model_workflow.svg  # Overview of the research workflow
+│   └── material_model_workflow.png  # Thesis overview and calibration workflows
 ├── tensile_test.py                  # Experimental tensile-test data processing
 ├── FEM_model_modify.py              # FEM result extraction and model/post-file processing
 ├── fit_tri.ipynb                    # Notebook for exploratory fitting / analysis

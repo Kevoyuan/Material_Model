@@ -2,6 +2,7 @@
 *.bat
 *.inf
 *.png
+!assets/material_model_workflow.png
 *.out
 *.msg
 *.SLDPRT
